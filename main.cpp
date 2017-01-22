@@ -7,6 +7,9 @@
 //
 
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <sqlite3.h>
 #include <sys/time.h>
