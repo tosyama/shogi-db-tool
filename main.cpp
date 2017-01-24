@@ -153,19 +153,19 @@ inline int getBitBB(const BitBoard9x9 *b, int x, int y){
     else return (int)((int64_t)1 & (b->bottom >> (BanX*(y-6) + x)));
 }
 
-void printBB(const BitBoard9x9 *b)
+void printBB(FILE *f, const BitBoard9x9 *b)
 
 {
     for (int y=0; y<BanY; y++) {
         for (int x=0; x<BanX; x++) {
-            if(getBitBB(b,x,y)) printf("1"); else printf("0");
+            if(getBitBB(b,x,y)) fprintf(f, "1"); else fprintf(f, "0");
         }
-        printf("\n");
+        fprintf(f, "\n");
     }
 }
 
 static void resetShogiBan(ShogiKykumen *shogi);
-static void printKyokumen(ShogiKykumen *shogi);
+static void printKyokumen(FILE *f, ShogiKykumen *shogi);
 
 static int sasu(ShogiKykumen *shogi, Sashite *s);
 static Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari);
@@ -191,11 +191,13 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s);
 #define INNER_X(x)   (BanX-(x))
 #define INNER_Y(y)   ((y)-1)
 
+FILE *logf = NULL;
 int main(int argc, const char * argv[]) {
     Kifu kifu;
     ShogiKykumen shogi;
     char code[KykumenCodeLen];
-    
+    logf = fopen("shogidbtool.log", "w");
+
     resetShogiBan(&shogi);
     sashite1(&shogi, 1, 1, 3, 7, 1);
     
@@ -212,11 +214,11 @@ int main(int argc, const char * argv[]) {
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
         createSashite(&shogi, 0, s, &n);
-        printf("手の数: %d\n", n);
+        fprintf(logf, "手の数: %d\n", n);
 
         for (int j=0; j<n; j++) {
             sasu(&shogi, &s[j]);
-            printKyokumen(&shogi);
+            printKyokumen(logf, &shogi);
             temodoshi(&shogi, &s[j]);
         }
 
@@ -250,6 +252,7 @@ int main(int argc, const char * argv[]) {
         if (readKIF(fname, &kifu) > 0)
             insertShogiDB("shogiDb.db", &kifu);
     } */
+    fclose(logf);
     return 0;
 }
 
@@ -258,7 +261,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     char buf[80];
     int fx, fy, tx, ty;
-    printKyokumen(shogi);
+    printKyokumen(stdout, shogi);
     
     while (1) {
         printf("move:1-9 1-9 1-9 1-9 + uchi:[11-17 or 21-27] 1-0 1-9\ntemodoshi:-1, print: p end:0,\n>");
@@ -290,7 +293,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             } else if (buf[0] == '0') { // end
                 return 0;
             } else if (buf[0] == 'p') { // print
-                printKyokumen(shogi);
+                printKyokumen(stdout, shogi);
             }
         } else {
             return 0;
@@ -355,52 +358,52 @@ void resetShogiBan(ShogiKykumen *shogi)
     for (k=0;k<DaiN;k++) komaDai[1][k] = 0;
 }
 
-void printKyokumen(ShogiKykumen *shogi)
+void printKyokumen(FILE *f, ShogiKykumen *shogi)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
     
-    printf("後手の持駒：");
+    fprintf(f, "後手の持駒：");
     int nashi = 1;
     for (int k=FU; k<DaiN; k++) {
         if (komaDai[1][k] == 1) {
-            printf("%s ", komaStr[k]);
+            fprintf(f, "%s ", komaStr[k]);
             nashi = 0;
         } else if (komaDai[1][k]>1) {
-            printf("%s%d ", komaStr[k], komaDai[1][k]);
+            fprintf(f, "%s%d ", komaStr[k], komaDai[1][k]);
             nashi = 0;
         }
     }
-    if (nashi) printf("なし");
+    if (nashi) fprintf(f, "なし");
     
-    printf("\n");
-    printf("  ９ ８ ７ ６ ５ ４ ３ ２ １\n"
+    fprintf(f, "\n");
+    fprintf(f, "  ９ ８ ７ ６ ５ ４ ３ ２ １\n"
            "+---------------------------+\n");
 
     for (int y=0; y<9; y++) {
-        printf("|");
+        fprintf(f, "|");
         for (int x=0; x<9; x++) {
-            printf("%s", (shogiBan[y][x] & UWATE) ? "v" : " ");
-            printf("%s", komaStr[shogiBan[y][x] & KOMATYPE2]);
+            fprintf(f, "%s", (shogiBan[y][x] & UWATE) ? "v" : " ");
+            fprintf(f, "%s", komaStr[shogiBan[y][x] & KOMATYPE2]);
         }
-        printf("|%s",kanSuji[y+1]);
-        printf("\n");
+        fprintf(f, "|%s",kanSuji[y+1]);
+        fprintf(f, "\n");
     }
-    printf("+---------------------------+\n");
-    printf("先手の持駒：");
+    fprintf(f, "+---------------------------+\n");
+    fprintf(f, "先手の持駒：");
     nashi = 1;
     for (int k=FU; k<DaiN; k++) {
         if (komaDai[0][k] == 1) {
-            printf("%s ", komaStr[k]);
+            fprintf(f, "%s ", komaStr[k]);
             nashi = 0;
         } else if (komaDai[0][k]>1) {
-            printf("%s%d ", komaStr[k], komaDai[0][k]);
+            fprintf(f, "%s%d ", komaStr[k], komaDai[0][k]);
             nashi = 0;
         }
     }
-    if (nashi) printf("なし");
+    if (nashi) fprintf(f, "なし");
     
-    printf("\n");
+    fprintf(f, "\n");
 }
 
 static int sasu(ShogiKykumen *shogi, Sashite *s)
@@ -547,8 +550,9 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         {8,0,0, 0,0,0, 0,0,16}, {8,0,0, 0,0,0, 0,0,16}, {12,4,4, 4,4,4, 4,4,20}
     };
     
-    // 予定:直接王手の検出。自ゴマは直接王手ゴマをとるか、王が移動するしかない
-    // 予定:自王位置から、間接王手と壁となる自ゴマの位置をマーク
+    // 予定: 直接王手の検出。自ゴマは直接王手ゴマをとるか、王が移動するしかない
+    // 予定: 間接王手の効きの検出。効きに入るか王手ゴマを取るか(二重王手の場合不可)、王が移動
+    // 予定: 自王位置から、間接王手と壁となる自ゴマの位置をマーク
     int ou_x = shogi->ou_x;
     int ou_y = shogi->ou_y;
     int bangai = bangaiInfo[ou_y][ou_x];
@@ -1037,7 +1041,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         }
     }
     
-    printBB(&tebanKikiB);
+    printBB(logf, &tebanKikiB);
     
 
     // 予定: 打ち
@@ -1779,9 +1783,9 @@ static void insertShogiDB(const char* filename, Kifu* kifu)
     }
     
     printf("\n");
-    printKyokumen(&shogi);
+    printKyokumen(stdout, &shogi);
     loadKyokumenFromCode(&shogi, ky_code);
-    printKyokumen(&shogi);
+    printKyokumen(stdout, &shogi);
 
     // 同一棋譜でないか念のため投了図でチェック
     {
