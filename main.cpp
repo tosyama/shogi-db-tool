@@ -638,6 +638,8 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
+    BitBoard9x9 uwateKikiB;
+    clearBB(&uwateKikiB);
     
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
@@ -844,7 +846,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
                 
-                case UMA:   // 十字4箇所だけ
+                case UMA: break;  // 十字4箇所だけ
                     for (int r=0; r<4; r++) {
                         to_x = x+UMA_range[r][0];
                         to_y = y+UMA_range[r][1];
@@ -877,7 +879,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             te_num++;
                         }
                     }
-                case KA:// 馬と共通。馬のときは成りなし
+                case KA: break; // 馬と共通。馬のときは成りなし
                     {
                         // {x移動,y移動,終了条件x,終了条件y}
                         int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -1035,14 +1037,27 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
                     }
                     break;
+                case UFU:
+                    to_y = y+1;
+                    setBitBB(&uwateKikiB, x, to_y);
+                    break;
+                    
+                case UKY:
+                    for (to_y=y+1; to_y<BanY; to_y++) {
+                        to_k = shogiBan[to_y][x];
+                        setBitBB(&uwateKikiB, x, to_y);
+                        if (to_k != EMP) break;
+                    }
+
+                    break;
+                    
                 default:
                     break;
             }
         }
     }
     
-    printBB(logf, &tebanKikiB);
-    
+    printBB(logf, &uwateKikiB);
 
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
