@@ -1048,9 +1048,13 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, x, to_y);
                         if (to_k != EMP) break;
                     }
-
                     break;
-                    
+                
+                case UKE:
+                    if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
+                    if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
+                    break;
+
                 default:
                     break;
             }
