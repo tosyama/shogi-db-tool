@@ -1037,12 +1037,13 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
                     }
                     break;
-                case UFU:
+                    
+                case UFU: break;
                     to_y = y+1;
                     setBitBB(&uwateKikiB, x, to_y);
                     break;
                     
-                case UKY:
+                case UKY:  break;
                     for (to_y=y+1; to_y<BanY; to_y++) {
                         to_k = shogiBan[to_y][x];
                         setBitBB(&uwateKikiB, x, to_y);
@@ -1050,9 +1051,22 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
                 
-                case UKE:
+                case UKE:  break;
                     if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
                     if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
+                    break;
+
+				case UGI:
+                    for (int r=0; r<5; r++) {
+                        to_x = x-GI_range[r][0];
+                        to_y = y-GI_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
                     break;
 
                 default:
@@ -1062,6 +1076,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     }
     
     printBB(logf, &uwateKikiB);
+	fprintf(logf, "\n");
 
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
