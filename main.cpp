@@ -644,6 +644,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
     // 予定: 駒の効きも記録
+    // 予定: 成対応必要
     int te_num = 0;
     int to_y, to_x;
     Koma to_k;
@@ -1056,7 +1057,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
                     break;
 
-				case UGI:
+				case UGI: break;
                     for (int r=0; r<5; r++) {
                         to_x = x-GI_range[r][0];
                         to_y = y-GI_range[r][1];
@@ -1068,7 +1069,24 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, to_x, to_y);
                     }
                     break;
-
+                    
+				case UKI:
+				case UNFU:
+				case UNKY:
+				case UNKE:
+				case UNGI:
+                    for (int r=0; r<6; r++) {
+                        to_x = x-KI_range[r][0];
+                        to_y = y-KI_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+                    break;
+                    
                 default:
                     break;
             }
