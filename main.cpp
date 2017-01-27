@@ -1038,6 +1038,8 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
                     }
                     break;
+
+                // 上手の効き記録
                     
                 case UFU: break;
                     to_y = y+1;
@@ -1069,7 +1071,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, to_x, to_y);
                     }
                     break;
-                    
+                
 				case UKI:
 				case UNFU:
 				case UNKY:
@@ -1086,8 +1088,23 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, to_x, to_y);
                     }
                     break;
-                    
-                default:
+
+				case UUMA:
+                    for (int r=0; r<4; r++) {
+                        to_x = x-UMA_range[r][0];
+                        to_y = y-UMA_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+
+				case UKA:
+                    break;
+
+				default:
                     break;
             }
         }
