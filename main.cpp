@@ -1102,6 +1102,24 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
 
 				case UKA:
+                    {
+                        // {x移動,y移動,終了条件x,終了条件y}
+                        int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
+                        for (int r=0; r<4; r++) {
+                            int inc_x = scanInf[r][0];
+                            int inc_y = scanInf[r][1];
+                            int end_x = scanInf[r][2];
+                            int end_y = scanInf[r][3];
+                            
+                            
+                            for (to_x = x+inc_x,to_y = y+inc_y; to_x != end_x && to_y != end_y; to_x+=inc_x, to_y+=inc_y) {
+                                to_k = shogiBan[to_y][to_x];
+                                setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
+                                if (to_k != EMP) break;
+							}
+						}
+					}
+                 
                     break;
 
 				default:
