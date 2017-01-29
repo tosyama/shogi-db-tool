@@ -1133,8 +1133,27 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         to_k = shogiBan[to_y][to_x];
                         setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
 					}
-					break;
 
+               case UHI:
+                    {
+                        // {移動幅, 終了条件}, {変数}　// メモ: 最適化が効きにくいかも
+                        int scanInf1[4][2] = {{-1,-1},{-1,-1},{1,BanY},{1,BanX}};
+                        int *scanInf2[4] = {&to_y, &to_x, &to_y, &to_x};
+                        
+                        for (int r=0; r<4; r++) {
+                            int* to_xy =scanInf2[r];
+                            int inc =scanInf1[r][0], end =scanInf1[r][1];
+                            to_x = x;
+                            to_y = y;
+                            (*to_xy)+= inc;
+                            for (;*to_xy != end;(*to_xy)+=inc) {
+                                to_k = shogiBan[to_y][to_x];
+                                setBitBB(&uwateKikiB, to_x, to_y);
+                                if (to_k != EMP) break;
+							}
+						}
+					}
+                    break;            
 
 				default:
                     break;
