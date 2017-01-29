@@ -199,7 +199,6 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    sashite1(&shogi, 1, 1, 3, 7, 1);
     
     Sashite s[200];
     int n;
@@ -537,6 +536,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     Sashite *cs = s;
     Koma teban = uwate ? UWATE : (Koma)0;
     
+    static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
     static int KI_range[6][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{0,1}};
     static int GI_range[5][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,1},{1,1}};
     static int KE_range[2][2] = {{-1,-2}, {1,-2}};
@@ -1154,6 +1154,19 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						}
 					}
                     break;            
+
+				case UOU:
+                    for (int r=0; r<8; r++) {
+                        to_x = x-OU_range[r][0];
+                        to_y = y-OU_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+                    break;
 
 				default:
                     break;
