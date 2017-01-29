@@ -1076,7 +1076,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 				case UNFU:
 				case UNKY:
 				case UNKE:
-				case UNGI:
+				case UNGI: break;
                     for (int r=0; r<6; r++) {
                         to_x = x-KI_range[r][0];
                         to_y = y-KI_range[r][1];
@@ -1089,7 +1089,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
 
-				case UUMA:
+				case UUMA: break;
                     for (int r=0; r<4; r++) {
                         to_x = x-UMA_range[r][0];
                         to_y = y-UMA_range[r][1];
@@ -1101,7 +1101,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, to_x, to_y);
                     }
 
-				case UKA:
+				case UKA: break;
                     {
                         // {x移動,y移動,終了条件x,終了条件y}
                         int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -1121,6 +1121,20 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
                  
                     break;
+                case URYU:
+                    for (int r=0; r<4; r++) {
+                        to_x = x+RYU_range[r][0];
+                        to_y = y+RYU_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        to_k = shogiBan[to_y][to_x];
+                        setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
+					}
+					break;
+
 
 				default:
                     break;
