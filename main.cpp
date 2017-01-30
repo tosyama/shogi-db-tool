@@ -1041,12 +1041,12 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 
                 // 上手の効き記録
                     
-                case UFU: break;
+                case UFU: 
                     to_y = y+1;
                     setBitBB(&uwateKikiB, x, to_y);
                     break;
                     
-                case UKY:  break;
+                case UKY: 
                     for (to_y=y+1; to_y<BanY; to_y++) {
                         to_k = shogiBan[to_y][x];
                         setBitBB(&uwateKikiB, x, to_y);
@@ -1054,12 +1054,12 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
                 
-                case UKE:  break;
+                case UKE:
                     if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
                     if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
                     break;
 
-				case UGI: break;
+				case UGI:
                     for (int r=0; r<5; r++) {
                         to_x = x-GI_range[r][0];
                         to_y = y-GI_range[r][1];
@@ -1076,7 +1076,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 				case UNFU:
 				case UNKY:
 				case UNKE:
-				case UNGI: break;
+				case UNGI:
                     for (int r=0; r<6; r++) {
                         to_x = x-KI_range[r][0];
                         to_y = y-KI_range[r][1];
@@ -1089,7 +1089,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
 
-				case UUMA: break;
+				case UUMA:
                     for (int r=0; r<4; r++) {
                         to_x = x-UMA_range[r][0];
                         to_y = y-UMA_range[r][1];
@@ -1101,7 +1101,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         setBitBB(&uwateKikiB, to_x, to_y);
                     }
 
-				case UKA: break;
+				case UKA:
                     {
                         // {x移動,y移動,終了条件x,終了条件y}
                         int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -1174,9 +1174,6 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         }
     }
     
-    printBB(logf, &uwateKikiB);
-	fprintf(logf, "\n");
-
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
     
