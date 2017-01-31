@@ -199,7 +199,6 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    sashite1(&shogi, 1, 1, 3, 7, 1);
     
     Sashite s[200];
     int n;
@@ -537,6 +536,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     Sashite *cs = s;
     Koma teban = uwate ? UWATE : (Koma)0;
     
+    static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
     static int KI_range[6][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{0,1}};
     static int GI_range[5][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,1},{1,1}};
     static int KE_range[2][2] = {{-1,-2}, {1,-2}};
@@ -638,10 +638,13 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
+    BitBoard9x9 uwateKikiB;
+    clearBB(&uwateKikiB);
     
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
     // 予定: 駒の効きも記録
+    // 予定: 成対応必要
     int te_num = 0;
     int to_y, to_x;
     Koma to_k;
@@ -844,7 +847,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
                 
-                case UMA:   // 十字4箇所だけ
+                case UMA: break;  // 十字4箇所だけ
                     for (int r=0; r<4; r++) {
                         to_x = x+UMA_range[r][0];
                         to_y = y+UMA_range[r][1];
@@ -877,7 +880,7 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             te_num++;
                         }
                     }
-                case KA:// 馬と共通。馬のときは成りなし
+                case KA: break; // 馬と共通。馬のときは成りなし
                     {
                         // {x移動,y移動,終了条件x,終了条件y}
                         int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -1035,15 +1038,142 @@ static void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
                     }
                     break;
-                default:
+
+                // 上手の効き記録
+                    
+                case UFU: 
+                    to_y = y+1;
+                    setBitBB(&uwateKikiB, x, to_y);
+                    break;
+                    
+                case UKY: 
+                    for (to_y=y+1; to_y<BanY; to_y++) {
+                        to_k = shogiBan[to_y][x];
+                        setBitBB(&uwateKikiB, x, to_y);
+                        if (to_k != EMP) break;
+                    }
+                    break;
+                
+                case UKE:
+                    if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
+                    if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
+                    break;
+
+				case UGI:
+                    for (int r=0; r<5; r++) {
+                        to_x = x-GI_range[r][0];
+                        to_y = y-GI_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+                    break;
+                
+				case UKI:
+				case UNFU:
+				case UNKY:
+				case UNKE:
+				case UNGI:
+                    for (int r=0; r<6; r++) {
+                        to_x = x-KI_range[r][0];
+                        to_y = y-KI_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+                    break;
+
+				case UUMA:
+                    for (int r=0; r<4; r++) {
+                        to_x = x-UMA_range[r][0];
+                        to_y = y-UMA_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+
+				case UKA:
+                    {
+                        // {x移動,y移動,終了条件x,終了条件y}
+                        int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
+                        for (int r=0; r<4; r++) {
+                            int inc_x = scanInf[r][0];
+                            int inc_y = scanInf[r][1];
+                            int end_x = scanInf[r][2];
+                            int end_y = scanInf[r][3];
+                            
+                            
+                            for (to_x = x+inc_x,to_y = y+inc_y; to_x != end_x && to_y != end_y; to_x+=inc_x, to_y+=inc_y) {
+                                to_k = shogiBan[to_y][to_x];
+                                setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
+                                if (to_k != EMP) break;
+							}
+						}
+					}
+                 
+                    break;
+                case URYU:
+                    for (int r=0; r<4; r++) {
+                        to_x = x+RYU_range[r][0];
+                        to_y = y+RYU_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        to_k = shogiBan[to_y][to_x];
+                        setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
+					}
+
+               case UHI:
+                    {
+                        // {移動幅, 終了条件}, {変数}　// メモ: 最適化が効きにくいかも
+                        int scanInf1[4][2] = {{-1,-1},{-1,-1},{1,BanY},{1,BanX}};
+                        int *scanInf2[4] = {&to_y, &to_x, &to_y, &to_x};
+                        
+                        for (int r=0; r<4; r++) {
+                            int* to_xy =scanInf2[r];
+                            int inc =scanInf1[r][0], end =scanInf1[r][1];
+                            to_x = x;
+                            to_y = y;
+                            (*to_xy)+= inc;
+                            for (;*to_xy != end;(*to_xy)+=inc) {
+                                to_k = shogiBan[to_y][to_x];
+                                setBitBB(&uwateKikiB, to_x, to_y);
+                                if (to_k != EMP) break;
+							}
+						}
+					}
+                    break;            
+
+				case UOU:
+                    for (int r=0; r<8; r++) {
+                        to_x = x-OU_range[r][0];
+                        to_y = y-OU_range[r][1];
+                        
+                        // 盤外チェック
+                        if (to_x<0 || to_x>=BanX) continue;
+                        if (to_y<0 || to_y>=BanY) continue;
+                        
+                        setBitBB(&uwateKikiB, to_x, to_y);
+                    }
+                    break;
+
+				default:
                     break;
             }
         }
     }
     
-    printBB(logf, &tebanKikiB);
-    
-
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
     
