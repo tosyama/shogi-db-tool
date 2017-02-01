@@ -1,5 +1,5 @@
 PROGRAM = a.out
-OBJS = main.o shogiban.o
+OBJS = main.o shogiban.o kyokumencode.o
 
 .SUFFIXES: .cpp .o
 
@@ -11,4 +11,5 @@ $(PROGRAM): $(OBJS)
 
 main.o: shogiban.h
 shogiban.o: shogiban.h
+kyokumencode.o: shogiban.h kyokumencode.h
 
