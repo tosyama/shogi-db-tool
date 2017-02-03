@@ -16,4 +16,6 @@ sashite.o: shogiban.h sashite.h
 kifu.o: kifu.h
 .PHONY: depend
 depend: $(OBJS:.o=.cpp)
-	-@ for i in $^ ;do $(CXX) -MM $$i; done
+	-@ $(RM) depend.inc
+	-@ for i in $^; do $(CXX) -MM $$i | sed "s/\ [_a-zA-Z0-9][_a-zA-Z0-9]*\.cpp//g" >> depend.inc; done
+-include depend.inc
