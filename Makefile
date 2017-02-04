@@ -1,5 +1,5 @@
 PROGRAM = a.out
-OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o
+OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o
 
 .SUFFIXES: .cpp .o
 
