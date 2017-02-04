@@ -1,5 +1,5 @@
 PROGRAM = a.out
-OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o
+OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o shogirule.o
 
 .SUFFIXES: .cpp .o
 
@@ -19,3 +19,4 @@ depend: $(OBJS:.o=.cpp)
 	-@ $(RM) depend.inc
 	-@ for i in $^; do $(CXX) -MM $$i | sed "s/\ [_a-zA-Z0-9][_a-zA-Z0-9]*\.cpp//g" >> depend.inc; done
 -include depend.inc
+
