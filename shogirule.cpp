@@ -745,7 +745,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     }
     
     //王の移動 相手の効きがある場合は移動できない
-    for (int r=0; r<6; r++) {
+    for (int r=0; r<8; r++) {
         to_x = ou_x+OU_range[r][0];
         to_y = ou_y+OU_range[r][1];
                         
