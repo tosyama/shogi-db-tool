@@ -744,6 +744,31 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         }
     }
     
+    //王の移動 相手の効きがある場合は移動できない
+    for (int r=0; r<6; r++) {
+        to_x = ou_x+OU_range[r][0];
+        to_y = ou_y+OU_range[r][1];
+                        
+        // 盤外チェック
+        if (to_x<0 || to_x>=BanX) continue;
+        if (to_y<0 || to_y>=BanY) continue;
+        
+        to_k = shogiBan[to_y][to_x];
+        setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
+                        
+        if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
+            if (getBitBB(&uwateKikiB, to_x, to_y)) continue; // 相手の効きあれば進めない
+            cs->type = SASHITE_IDOU;
+            cs->idou.to_y = to_y;
+            cs->idou.to_x = to_x;
+            cs->idou.from_y = ou_y;
+            cs->idou.from_x = ou_x;
+            cs->idou.nari = 0;
+            cs++;
+            te_num++;
+        }
+    }
+                        
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
     
