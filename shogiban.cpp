@@ -103,6 +103,7 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     k1 = shogiBan[from_y][from_x];
     k2 = shogiBan[to_y][to_x];
     
+    printf("fx:%d fy:%d\n", from_x, from_y);
     assert(k1 != EMP);
     
     if (k2 != EMP) {

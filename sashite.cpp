@@ -46,7 +46,14 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
             assert(komaDai[dai_uwate][torik&KOMATYPE1] > 0);
             komaDai[dai_uwate][torik&KOMATYPE1]--;
         }
-        
+		if (k == OU) {
+			shogi->ou_x = s->idou.from_x;
+			shogi->ou_y = s->idou.from_y;
+		}
+		if (k == UOU) {
+			shogi->uou_x = s->idou.from_x;
+			shogi->uou_y = s->idou.from_y;
+		}
     } else if (s->type == SASHITE_UCHI) {
         assert(shogiBan[s->uchi.to_y][s->uchi.to_x] != EMP);
         shogiBan[s->uchi.to_y][s->uchi.to_x] = EMP;

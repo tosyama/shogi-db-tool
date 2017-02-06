@@ -620,7 +620,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     for (to_y=y+1; to_y<BanY; to_y++) {
                         to_k = shogiBan[to_y][x];
                         setBitBB(&uwateKikiB, x, to_y);
-                        if (to_k != EMP) break;
+                        if ((to_k != EMP)&&(to_k!=OU)) break;
                     }
                     break;
                 
@@ -685,7 +685,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             for (to_x = x+inc_x,to_y = y+inc_y; to_x != end_x && to_y != end_y; to_x+=inc_x, to_y+=inc_y) {
                                 to_k = shogiBan[to_y][to_x];
                                 setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
-                                if (to_k != EMP) break;
+                                if ((to_k != EMP)&&(to_k!=OU)) break;
 							}
 						}
 					}
@@ -719,7 +719,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             for (;*to_xy != end;(*to_xy)+=inc) {
                                 to_k = shogiBan[to_y][to_x];
                                 setBitBB(&uwateKikiB, to_x, to_y);
-                                if (to_k != EMP) break;
+                                if ((to_k != EMP)&&(to_k!=OU)) break;
 							}
 						}
 					}
