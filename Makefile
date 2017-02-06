@@ -7,7 +7,7 @@ $(PROGRAM): $(OBJS)
 	$(CXX) -o $(PROGRAM) $^ -lsqlite3
 
 .cpp.o:
-	$(CXX) -c $<
+	$(CXX) -c -g $<
 
 main.o: shogiban.h kyokumencode.h sashite.h
 shogiban.o: shogiban.h
