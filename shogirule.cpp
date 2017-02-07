@@ -132,6 +132,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     int ou_x = shogi->ou_x;
     int ou_y = shogi->ou_y;
     int bangai = bangaiInfo[ou_y][ou_x];
+	int oute_num = 0;
     BitBoard9x9 outePosKikiB;    // 王手ゴマの位置を記録
     BitBoard9x9 kabePosB;   // pinされている駒の位置を記録
     
@@ -140,9 +141,11 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     {
         if (!(bangai & OutF2L) && isRangeKE(shogiBan[ou_y-2][ou_x-1],1)) {   // 桂王手の検出
             setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
+			oute_num++;
             printf("左桂王手\n");
         } if (!(bangai & OutF2R) && isRangeKE(shogiBan[ou_y-2][ou_x+1],1)) {    // 桂王手の検出
             setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
+			oute_num++;
             printf("右桂王手\n");
         }
 
@@ -176,7 +179,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             if ((*k & UWATE) != teban) { // 相手駒
                                 if(isKoma(*k, koma_flag, 1)) {
                                     printf("間接王手%d\n", i);
-                                    setBitBB(&outePosKikiB, &workKikiB);
+									setBitBB(&outePosKikiB, &workKikiB);
+									oute_num++;
                                 }
                             } else { // 味方駒 壁駒になってないか相手駒を追加検索
                                 for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
@@ -195,6 +199,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                 } else if ((*k & UWATE) != teban) { // 相手駒 直接王手の判別
                     if(isKoma(*k, scanInf[i][2], 1)) {
                         setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
+						oute_num++;
                         printf("直接王手%d\n", i);
                     }
                 } else { //味方 壁駒になってないか相手駒を追加検索
@@ -215,8 +220,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         }
 
     }
-    
-    printBB(stdout, &outePosKikiB);
+    printf("outen: %d\n", oute_num);
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
