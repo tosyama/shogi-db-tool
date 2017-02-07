@@ -26,6 +26,7 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
+    koma_move(&shogi, 3,3,3,4,0);
     
     Sashite s[200];
     int n;

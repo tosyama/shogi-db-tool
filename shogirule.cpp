@@ -39,6 +39,12 @@ inline void setBitBB(BitBoard9x9 *b, int n){
     else b->bottom |= (1 << (n-54));
 }
 
+inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
+{
+	b->topmid |= orb->topmid;
+	b->bottom |= orb->bottom;
+}
+
 inline int getBitBB(const BitBoard9x9 *b, int x, int y){
     if (y<6) return (int)((int64_t)1 & (b->topmid >> (BanX*y + x)));
     else return (int)((int64_t)1 & (b->bottom >> (BanX*(y-6) + x)));
@@ -126,17 +132,17 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     int ou_x = shogi->ou_x;
     int ou_y = shogi->ou_y;
     int bangai = bangaiInfo[ou_y][ou_x];
-    BitBoard9x9 outePosB;    // 王手ゴマの位置を記録
+    BitBoard9x9 outePosKikiB;    // 王手ゴマの位置を記録
     BitBoard9x9 kabePosB;   // pinされている駒の位置を記録
     
-    clearBB(&outePosB);
+    clearBB(&outePosKikiB);
     clearBB(&kabePosB);
     {
         if (!(bangai & OutF2L) && isRangeKE(shogiBan[ou_y-2][ou_x-1],1)) {   // 桂王手の検出
-            setBitBB(&outePosB, ou_x-1, ou_y-2);
+            setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
             printf("左桂王手\n");
         } if (!(bangai & OutF2R) && isRangeKE(shogiBan[ou_y-2][ou_x+1],1)) {    // 桂王手の検出
-            setBitBB(&outePosB, ou_x+1, ou_y-2);
+            setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
             printf("右桂王手\n");
         }
 
@@ -158,15 +164,19 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
             if (scanInf[i][1]>0) {
                 int inc = scanInf[i][0];
                 Koma *k = ou_pos + inc;
+				BitBoard9x9 workKikiB;    // 王手ゴマの位置を記録
                 if(*k == EMP) { // 空 間接王手の検索
                     Koma *end_pos = ou_pos + (inc*(scanInf[i][1]+1));
                     Koma koma_flag = (Koma)scanInf[i][3];
+					clearBB(&workKikiB);
+					setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
                     for(k+=inc;k!=end_pos; k+=inc) {
+						setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
                         if (*k != EMP) {
                             if ((*k & UWATE) != teban) { // 相手駒
                                 if(isKoma(*k, koma_flag, 1)) {
                                     printf("間接王手%d\n", i);
-                                    setBitBB(&outePosB, (int)(k-&shogiBan[0][0]));
+                                    setBitBB(&outePosKikiB, &workKikiB);
                                 }
                             } else { // 味方駒 壁駒になってないか相手駒を追加検索
                                 for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
@@ -184,7 +194,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                 } else if ((*k & UWATE) != teban) { // 相手駒 直接王手の判別
                     if(isKoma(*k, scanInf[i][2], 1)) {
-                        setBitBB(&outePosB, (int)(k-&shogiBan[0][0]));
+                        setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
                         printf("直接王手%d\n", i);
                     }
                 } else { //味方 壁駒になってないか相手駒を追加検索
@@ -205,6 +215,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         }
 
     }
+    
+    printBB(stdout, &outePosKikiB);
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
