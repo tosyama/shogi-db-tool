@@ -135,6 +135,16 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 	int oute_num = 0;
     BitBoard9x9 outePosKikiB;    // 王手ゴマの位置を記録
     BitBoard9x9 kabePosB;   // pinされている駒の位置を記録
+    enum PinInfo {
+        NoPin = 0, VertPin, HorizPin, LNanamePin, RNanamePin
+        
+    };
+    int kabegomaInfo[BanY][BanX] = {    // pinされている駒のと向きを記録
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+    };
+    
     
     clearBB(&outePosKikiB);
     clearBB(&kabePosB);
@@ -149,16 +159,16 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
             printf("右桂王手\n");
         }
 
-        // {検出移動幅, ループ数, 直接王手駒, 間接王手駒}
-        int  scanInf[8][4] = {
-            {BanX*-1-1, min(ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA},
-            {BanX*-1,ou_y,F_MAE_GOMA,F_KY_HI_RYU},
-            {BanX*-1+1, min(BanX-1-ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA},
-            {-1,ou_x,F_YOKO_GOMA,F_HI_RYU},
-            {1,BanX-1-ou_x,F_YOKO_GOMA,F_HI_RYU},
-            {BanX*1-1,min(ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA},
-            {BanX*1,BanY-1-ou_y,F_YOKO_GOMA,F_HI_RYU},
-            {BanX*1+1,min(BanX-1-ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA}
+        // {検出移動幅, ループ数, 直接王手駒, 間接王手駒, Pinタイプ}
+        int  scanInf[8][5] = {
+            {BanX*-1-1, min(ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, LNanamePin},
+            {BanX*-1,ou_y,F_MAE_GOMA,F_KY_HI_RYU, VertPin},
+            {BanX*-1+1, min(BanX-1-ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, RNanamePin},
+            {-1,ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
+            {1,BanX-1-ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
+            {BanX*1-1,min(ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, RNanamePin},
+            {BanX*1,BanY-1-ou_y,F_YOKO_GOMA,F_HI_RYU, VertPin},
+            {BanX*1+1,min(BanX-1-ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, LNanamePin}
         };
         
         Koma *ou_pos = &shogiBan[ou_y][ou_x];
@@ -188,6 +198,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                                         if (isKoma(*kk, koma_flag, 1)) {
                                             printf("壁駒%d\n", i);
                                             setBitBB(&kabePosB, (int)(k-&shogiBan[0][0]));
+											int n = (int)(k-&shogiBan[0][0]);
+											*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
                                         }
                                         break;
                                     }
@@ -211,6 +223,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             if (isKoma(*kk, koma_flag, 1)) {
                                 printf("壁駒%d\n", i);
                                 setBitBB(&kabePosB, (int)(k-&shogiBan[0][0]));
+								int n = (int)(k-&shogiBan[0][0]);
+								*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
                             }
                             break;
                         }
@@ -221,6 +235,12 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 
     }
     printf("outen: %d\n", oute_num);
+    for (int y=0; y<BanY; y++) {
+        for (int x=0; x<BanX; x++) {
+			printf("%d", kabegomaInfo[y][x]);
+        }
+        printf("\n");
+    }
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
