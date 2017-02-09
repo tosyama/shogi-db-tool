@@ -258,32 +258,37 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         for(int x=0; x<BanX; x++) {
             Koma k = shogiBan[y][x];
             switch (k) {
-                case FU: break;
+                case FU:
                     {
                         to_y = y-1; //ルール上、-1にならない。
                         to_k = shogiBan[to_y][x];
                         setBitBB(&tebanKikiB, x, to_y); // 効きの記録
+						if (oute_num > 1) continue;
+						if (oute_num == 1 && !getBitBB(&outePosKikiB, x, to_y)) continue;
+
                         if (to_k == EMP || to_k & UWATE) {// 味方がいなければ進める
-                            if (getBitBB(&kabePosB, x, y) && ou_x!=x) continue;   // 壁駒の場合は王と縦と並んでる以外は動かせない
-                            if (y != 1) { // 成らずの指手
-                                cs->type = SASHITE_IDOU;
-                                cs->idou.to_y = to_y;
-                                cs->idou.from_y = y;
-                                cs->idou.to_x = cs->idou.from_x = x;
-                                cs->idou.nari = 0;
-                                cs++;
-                                te_num++;
-                            }
-                            // 成りの指手
-                            if (y < 4) {
-                                cs->type = SASHITE_IDOU;
-                                cs->idou.to_y = to_y;
-                                cs->idou.from_y = y;
-                                cs->idou.to_x = cs->idou.from_x = x;
-                                cs->idou.nari = 1;
-                                cs++;
-                                te_num++;
-                            }
+                            if (kabegomaInfo[y][x]==NoPin
+									|| kabegomaInfo[y][x]==VertPin) {
+								if (y != 1) { // 成らずの指手
+									cs->type = SASHITE_IDOU;
+									cs->idou.to_y = to_y;
+									cs->idou.from_y = y;
+									cs->idou.to_x = cs->idou.from_x = x;
+									cs->idou.nari = 0;
+									cs++;
+									te_num++;
+								}
+								// 成りの指手
+								if (y < 4) {
+									cs->type = SASHITE_IDOU;
+									cs->idou.to_y = to_y;
+									cs->idou.from_y = y;
+									cs->idou.to_x = cs->idou.from_x = x;
+									cs->idou.nari = 1;
+									cs++;
+									te_num++;
+								}
+							}
                         }
                     }
                     break;
@@ -781,7 +786,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     }
     
     //王の移動 相手の効きがある場合は移動できない
-    for (int r=0; r<8; r++) {
+    /*for (int r=0; r<8; r++) {
         to_x = ou_x+OU_range[r][0];
         to_y = ou_y+OU_range[r][1];
                         
@@ -803,7 +808,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
             cs++;
             te_num++;
         }
-    }
+    }*/
                         
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
