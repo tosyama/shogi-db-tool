@@ -258,7 +258,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         for(int x=0; x<BanX; x++) {
             Koma k = shogiBan[y][x];
             switch (k) {
-                case FU:
+                case FU: break;
                     {
                         to_y = y-1; //ルール上、-1にならない。
                         to_k = shogiBan[to_y][x];
@@ -293,22 +293,23 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
 
-                case KY: break;
+                case KY: 
                     {
-                        to_x = x;
-                        for (to_y=y-1; to_y>=0; to_y--) {
-                            to_k = shogiBan[to_y][to_x];
-                            setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
-                            
-                            if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                                if (getBitBB(&kabePosB, x, y) && ou_x!=x) {// 壁駒の場合は王と縦と並んでる以外は動かせない
-                                    if (to_k != EMP) break;
-                                    else continue;  //効きを記録するためループ継続
-                                }
+						bool canmove=(oute_num<2 && 
+								(kabegomaInfo[y][x]==NoPin
+									|| kabegomaInfo[y][x]==VertPin));
+						bool ext = false;
+                        for (to_y=y-1; to_y>=0 && !ext; to_y--) {
+                            to_k = shogiBan[to_y][x];
+                            setBitBB(&tebanKikiB, x, to_y);  // 効きの記録
+							if (to_k != EMP) 
+								if (to_k & UWATE) ext=true; else break;
+							if (canmove) {
+								if (oute_num == 1 && !getBitBB(&outePosKikiB, x, to_y)) continue; 
                                 if (to_y > 0) {
                                     cs->type = SASHITE_IDOU;
                                     cs->idou.to_y = to_y;
-                                    cs->idou.to_x = to_x;
+                                    cs->idou.to_x = x;
                                     cs->idou.from_y = y;
                                     cs->idou.from_x = x;
                                     cs->idou.nari = 0;
@@ -319,17 +320,14 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                                 if (to_y < 3) {
                                     cs->type = SASHITE_IDOU;
                                     cs->idou.to_y = to_y;
-                                    cs->idou.to_x = to_x;
+                                    cs->idou.to_x = x;
                                     cs->idou.from_y = y;
                                     cs->idou.from_x = x;
                                     cs->idou.nari = 1;
                                     cs++;
                                     te_num++;
                                 }
-                                if (to_k != EMP) break;
-                            } else {
-                                break;
-                            }
+							}
                         }
                     }
                     break;
