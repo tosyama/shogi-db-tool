@@ -144,7 +144,11 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
         {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
         {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
     };
-    
+    int ukabegomaInfo[BanY][BanX] = {    // pinされている駒のと向きを記録
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+        {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
+    };
     
     clearBB(&outePosKikiB);
     clearBB(&kabePosB);
@@ -235,12 +239,12 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 
     }
     printf("outen: %d\n", oute_num);
-    for (int y=0; y<BanY; y++) {
+    /*for (int y=0; y<BanY; y++) {
         for (int x=0; x<BanX; x++) {
 			printf("%d", kabegomaInfo[y][x]);
         }
         printf("\n");
-    }
+    }*/
     
     BitBoard9x9 tebanKikiB;
     clearBB(&tebanKikiB);
@@ -303,7 +307,17 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                             to_k = shogiBan[to_y][x];
                             setBitBB(&tebanKikiB, x, to_y);  // 効きの記録
 							if (to_k != EMP) 
-								if (to_k & UWATE) ext=true; else break;
+								if (to_k & UWATE){
+									ext=true; // exit loop
+									// check to_k is pinned.
+									for (int yy=to_y-1; yy>=0; yy--) {
+										if (shogiBan[yy][x] != EMP) {
+											if (shogiBan[yy][x]==UOU)
+												ukabegomaInfo[to_y][x]=VertPin;
+											break;
+										}
+									}
+								} else break;
 							if (canmove) {
 								if (oute_num == 1 && !getBitBB(&outePosKikiB, x, to_y)) continue; 
                                 if (to_y > 0) {
@@ -782,7 +796,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
             }
         }
     }
-    
+   printBB(stdout, &tebanKikiB);
+
     //王の移動 相手の効きがある場合は移動できない
     /*for (int r=0; r<8; r++) {
         to_x = ou_x+OU_range[r][0];
@@ -810,6 +825,13 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
+    
+    for (int y=0; y<BanY; y++) {
+        for (int x=0; x<BanX; x++) {
+			printf("%d", ukabegomaInfo[y][x]);
+        }
+        printf("\n");
+    }
     
     *n = te_num;
 }
