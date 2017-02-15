@@ -45,6 +45,24 @@ inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
 	b->bottom |= orb->bottom;
 }
 
+inline void setBitsBB(BitBoard9x9 *b, int x, int y, int pattern)
+{
+	int n=BanX*y + x-19; 
+	if (x==0) pattern &= 0xf7fbfdfe;
+	else if (x==8) pattern &= 0xdfeff7fb;
+
+	if (n>=0)
+		b->topmid |= ((int64_t)pattern << n);
+	else
+		b->topmid |= ((int64_t)pattern >> (-n));
+	n-=54;
+	if (n>=0)
+		b->bottom |= ((int64_t)pattern << n);
+	else
+		b->bottom |= ((int64_t)pattern >> (-n));
+
+}
+
 inline int getBitBB(const BitBoard9x9 *b, int x, int y){
     if (y<6) return (int)((int64_t)1 & (b->topmid >> (BanX*y + x)));
     else return (int)((int64_t)1 & (b->bottom >> (BanX*(y-6) + x)));
@@ -250,7 +268,15 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     clearBB(&tebanKikiB);
     BitBoard9x9 uwateKikiB;
     clearBB(&uwateKikiB);
-    
+    int testpt = 0x101c0e05;
+	//      0001 0
+	// 000 0001 11
+	// 00 0000 111
+	// 0 0000 0101
+	// f7fbfdfe
+	// dfeff7fb
+	setBitsBB(&tebanKikiB,8,6,testpt);
+	printBB(stdout, &tebanKikiB);
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
     // 予定: 駒の効きも記録
@@ -297,7 +323,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     }
                     break;
 
-                case KY: 
+                case KY: break; 
                     {
 						bool canmove=(oute_num<2 && 
 								(kabegomaInfo[y][x]==NoPin
@@ -796,7 +822,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
             }
         }
     }
-   printBB(stdout, &tebanKikiB);
 
     //王の移動 相手の効きがある場合は移動できない
     /*for (int r=0; r<8; r++) {
@@ -826,12 +851,12 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
     
-    for (int y=0; y<BanY; y++) {
+   /* for (int y=0; y<BanY; y++) {
         for (int x=0; x<BanX; x++) {
 			printf("%d", ukabegomaInfo[y][x]);
         }
         printf("\n");
-    }
+    }*/
     
     *n = te_num;
 }
