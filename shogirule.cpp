@@ -137,6 +137,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     static int UMA_range[4][2] = {{0,-1}, {-1,0}, {1,0},{0,1}};
     static int RYU_range[4][2] = {{-1,-1}, {1,-1}, {-1,1},{1,1}};
     
+	static int KE_pttn = 0x5;
+
     // ↓あまりいらないかも
     static int bangaiInfo[BanY][BanX] = {
         {11,3,3, 3,3,3, 3,3,19},{9,1,1, 1,1,1, 1,1,17},{8,0,0, 0,0,0, 0,0,16},
@@ -275,8 +277,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 	// 0 0000 0101
 	// f7fbfdfe
 	// dfeff7fb
-	setBitsBB(&tebanKikiB,8,6,testpt);
-	printBB(stdout, &tebanKikiB);
+
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
     // 予定: 駒の効きも記録
@@ -371,44 +372,48 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         }
                     }
                     break;
-                case KE: break;
-                    for (int r=0; r<2; r++) {
-                        to_x = x+KE_range[r][0];
-                        to_y = y+KE_range[r][1];
-                        
-                        to_k = shogiBan[to_y][to_x];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
+                case KE: 
+					{
+						bool canmove=(oute_num<2 && 
+								(kabegomaInfo[y][x]==NoPin));
+						setBitsBB(&tebanKikiB, x, y, KE_pttn);
+						if (canmove)
+						for (int r=0; r<2; r++) {
+							to_x = x+KE_range[r][0];
+							to_y = y+KE_range[r][1];
+							
+							to_k = shogiBan[to_y][to_x];
+							
+							// 盤外チェック
+							if (to_x<0 || to_x>=BanX) continue;
+							if (to_y<0 || to_y>=BanY) continue;
 
-                        setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
-
-                        if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                            if (getBitBB(&kabePosB, x, y)) continue;    // 壁駒の場合は動けない
-                            if (to_y > 1) {
-                                cs->type = SASHITE_IDOU;
-                                cs->idou.to_y = to_y;
-                                cs->idou.to_x = to_x;
-                                cs->idou.from_y = y;
-                                cs->idou.from_x = x;
-                                cs->idou.nari = 0;
-                                cs++;
-                                te_num++;
-                            }
-                            // 成りの指手
-                            if (to_y < 3) {
-                                cs->type = SASHITE_IDOU;
-                                cs->idou.to_y = to_y;
-                                cs->idou.to_x = to_x;
-                                cs->idou.from_y = y;
-                                cs->idou.from_x = x;
-                                cs->idou.nari = 1;
-                                cs++;
-                                te_num++;
-                            }
-                        }
-                    }
+							if (to_k == EMP || (to_k & UWATE)) {// 味方がいなければ進める
+								if (oute_num == 1 && !getBitBB(&outePosKikiB, to_x, to_y)) continue; 
+								if (to_y > 1) {
+									cs->type = SASHITE_IDOU;
+									cs->idou.to_y = to_y;
+									cs->idou.to_x = to_x;
+									cs->idou.from_y = y;
+									cs->idou.from_x = x;
+									cs->idou.nari = 0;
+									cs++;
+									te_num++;
+								}
+								// 成りの指手
+								if (to_y < 3) {
+									cs->type = SASHITE_IDOU;
+									cs->idou.to_y = to_y;
+									cs->idou.to_x = to_x;
+									cs->idou.from_y = y;
+									cs->idou.from_x = x;
+									cs->idou.nari = 1;
+									cs++;
+									te_num++;
+								}
+							}
+						}
+					}
                     break;
                 case GI: break;
                     for (int r=0; r<5; r++) {
