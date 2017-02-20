@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
@@ -20,8 +21,8 @@
 
 // work用 bitBoard
 typedef struct {
-    int64_t topmid;
-    int32_t bottom;
+    uint64_t topmid;
+    uint32_t bottom;
 } BitBoard9x9;
 
 inline void clearBB(BitBoard9x9 *b){
@@ -30,12 +31,12 @@ inline void clearBB(BitBoard9x9 *b){
 }
 
 inline void setBitBB(BitBoard9x9 *b, int x, int y){
-    if (y<6) b->topmid |= ((int64_t)1 << (BanX*y + x));
+    if (y<6) b->topmid |= ((uint64_t)1 << (BanX*y + x));
     else b->bottom |= (1 << (BanX*(y-6) + x));
 }
 
 inline void setBitBB(BitBoard9x9 *b, int n){
-    if (n<54) b->topmid |= ((int64_t)1 << n);
+    if (n<54) b->topmid |= ((uint64_t)1 << n);
     else b->bottom |= (1 << (n-54));
 }
 
@@ -45,27 +46,25 @@ inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
 	b->bottom |= orb->bottom;
 }
 
-inline void setBitsBB(BitBoard9x9 *b, int x, int y, int pattern)
+inline void setBitsBB(BitBoard9x9 *b, int x, int y, uint32_t pattern)
 {
-	int n=BanX*y + x-19; 
+	int n=BanX*y + x-10; 
 	if (x==0) pattern &= 0xf7fbfdfe;
 	else if (x==8) pattern &= 0xdfeff7fb;
-
-	if (n>=0)
-		b->topmid |= ((int64_t)pattern << n);
-	else
-		b->topmid |= ((int64_t)pattern >> (-n));
+	if (n>=0) {
+		if (n<64) b->topmid |= ((uint64_t)pattern << n);
+	} else if (n>-64)
+		b->topmid |= (((uint64_t)pattern) >> (-n));
 	n-=54;
-	if (n>=0)
-		b->bottom |= ((int64_t)pattern << n);
-	else
-		b->bottom |= ((int64_t)pattern >> (-n));
-
+	if (n>=0) {
+		if(n<32) b->bottom |= (pattern << n);
+	} else if (n>-32)
+		b->bottom |= (pattern >> (-n));
 }
 
 inline int getBitBB(const BitBoard9x9 *b, int x, int y){
-    if (y<6) return (int)((int64_t)1 & (b->topmid >> (BanX*y + x)));
-    else return (int)((int64_t)1 & (b->bottom >> (BanX*(y-6) + x)));
+    if (y<6) return (int)((uint64_t)1 & (b->topmid >> (BanX*y + x)));
+    else return (int)((uint32_t)1 & (b->bottom >> (BanX*(y-6) + x)));
 }
 
 void printBB(FILE *f, const BitBoard9x9 *b)
@@ -132,12 +131,13 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     
     static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
     static int KI_range[6][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{0,1}};
-    static int GI_range[5][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,1},{1,1}};
+    //static int GI_range[5][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,1},{1,1}};
+    static int GI_range[5][2] = {{0,-1}, {-1,-1}, {1,1}, {1,-1}, {-1,1}};
     static int KE_range[2][2] = {{-1,-2}, {1,-2}};
     static int UMA_range[4][2] = {{0,-1}, {-1,0}, {1,0},{0,1}};
     static int RYU_range[4][2] = {{-1,-1}, {1,-1}, {-1,1},{1,1}};
     
-	static int KE_pttn = 0x5;
+	static uint32_t GI_pttn = 0x00140007;
 
     // ↓あまりいらないかも
     static int bangaiInfo[BanY][BanX] = {
@@ -277,6 +277,9 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 	// 0 0000 0101
 	// f7fbfdfe
 	// dfeff7fb
+	
+	// GI: 0x28000e00
+	// static uint32_t GI_pttn = 0x00150007;
 
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
@@ -376,7 +379,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					{
 						bool canmove=(oute_num<2 && 
 								(kabegomaInfo[y][x]==NoPin));
-						setBitsBB(&tebanKikiB, x, y, KE_pttn);
+						setBitBB(&tebanKikiB, x-1, y-2);
+						setBitBB(&tebanKikiB, x+1, y-2);
 						if (canmove)
 						for (int r=0; r<2; r++) {
 							to_x = x+KE_range[r][0];
@@ -415,54 +419,48 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						}
 					}
                     break;
-                case GI: break;
-                    for (int r=0; r<5; r++) {
-                        to_x = x+GI_range[r][0];
-                        to_y = y+GI_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        to_k = shogiBan[to_y][to_x];
-                        setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
-                        
-                        if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                            if (getBitBB(&kabePosB, x, y)) {   // 壁駒の場合は判断が必要
-                                if (ou_x == x) { // 縦以外動いたらダメ
-                                    if (GI_range[r][0] != 0) continue;
-                                } else if (ou_y == y) { // 横以外動いたらダメ
-                                    if (GI_range[r][1] != 0) continue;
-                                } else if ((ou_x<x && ou_y<y) || (ou_x>x && ou_y>y)) {    // "\" 以外動いたらダメ
-                                    if (GI_range[r][0] != GI_range[r][1]) continue;
-                                } else {    // "/" 以外動いたらダメ
-                                    if ((GI_range[r][0]+GI_range[r][1])) continue;
-                                }
-                            }
-                            
-                            cs->type = SASHITE_IDOU;
-                            cs->idou.to_y = to_y;
-                            cs->idou.to_x = to_x;
-                            cs->idou.from_y = y;
-                            cs->idou.from_x = x;
-                            cs->idou.nari = 0;
-                            cs++;
-                            te_num++;
-                            
-                            // 成りの指手
-                            if (to_y < 3 || y<=2) {
-                                cs->type = SASHITE_IDOU;
-                                cs->idou.to_y = to_y;
-                                cs->idou.to_x = to_x;
-                                cs->idou.from_y = y;
-                                cs->idou.from_x = x;
-                                cs->idou.nari = 1;
-                                cs++;
-                                te_num++;
-                            }
-                            
-                        }
-                    }
+                case GI:
+					{
+						bool canmove=(oute_num<2 && 
+								(kabegomaInfo[y][x]!=HorizPin));
+						setBitsBB(&tebanKikiB, x, y, GI_pttn);
+						if (canmove)
+						for (int r=0; r<5; r++) {
+							to_x = x+GI_range[r][0];
+							to_y = y+GI_range[r][1];
+							
+							// 盤外チェック
+							if (to_x<0 || to_x>=BanX) continue;
+							if (to_y<0 || to_y>=BanY) continue;
+							
+							to_k = shogiBan[to_y][to_x];
+							
+							if (to_k == EMP || (to_k & UWATE) ) {// 味方がいなければ進める
+								
+								cs->type = SASHITE_IDOU;
+								cs->idou.to_y = to_y;
+								cs->idou.to_x = to_x;
+								cs->idou.from_y = y;
+								cs->idou.from_x = x;
+								cs->idou.nari = 0;
+								cs++;
+								te_num++;
+								
+								// 成りの指手
+								if (to_y < 3 || y<=2) {
+									cs->type = SASHITE_IDOU;
+									cs->idou.to_y = to_y;
+									cs->idou.to_x = to_x;
+									cs->idou.from_y = y;
+									cs->idou.from_x = x;
+									cs->idou.nari = 1;
+									cs++;
+									te_num++;
+								}
+								
+							}
+						}
+					}
                     break;
                 case KI: break;
                     for (int r=0; r<6; r++) {
@@ -855,7 +853,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
-    
+	printBB(stdout, &tebanKikiB);    
    /* for (int y=0; y<BanY; y++) {
         for (int x=0; x<BanX; x++) {
 			printf("%d", ukabegomaInfo[y][x]);
