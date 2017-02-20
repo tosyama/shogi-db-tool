@@ -32,12 +32,12 @@ inline void clearBB(BitBoard9x9 *b){
 
 inline void setBitBB(BitBoard9x9 *b, int x, int y){
     if (y<6) b->topmid |= ((uint64_t)1 << (BanX*y + x));
-    else b->bottom |= (1 << (BanX*(y-6) + x));
+    else b->bottom |= (1u << (BanX*(y-6) + x));
 }
 
 inline void setBitBB(BitBoard9x9 *b, int n){
     if (n<54) b->topmid |= ((uint64_t)1 << n);
-    else b->bottom |= (1 << (n-54));
+    else b->bottom |= (1u << (n-54));
 }
 
 inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
@@ -49,8 +49,8 @@ inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
 inline void setBitsBB(BitBoard9x9 *b, int x, int y, uint32_t pattern)
 {
 	int n=BanX*y + x-10; 
-	if (x==0) pattern &= 0xf7fbfdfe;
-	else if (x==8) pattern &= 0xdfeff7fb;
+	if (x==0) pattern &= 0xf7fbfdfeu;
+	else if (x==8) pattern &= 0xdfeff7fbu;
 	if (n>=0) {
 		if (n<64) b->topmid |= ((uint64_t)pattern << n);
 	} else if (n>-64)
@@ -131,12 +131,16 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     
     static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
     static int KI_range[6][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{0,1}};
-    //static int GI_range[5][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,1},{1,1}};
     static int GI_range[5][2] = {{0,-1}, {-1,-1}, {1,1}, {1,-1}, {-1,1}};
     static int KE_range[2][2] = {{-1,-2}, {1,-2}};
     static int UMA_range[4][2] = {{0,-1}, {-1,0}, {1,0},{0,1}};
     static int RYU_range[4][2] = {{-1,-1}, {1,-1}, {-1,1},{1,1}};
     
+    //      0001 0
+	// 000 0001 11
+	// 00 0000 111
+	// 0 0000 0101
+
 	static uint32_t GI_pttn = 0x00140007;
 
     // ↓あまりいらないかも
@@ -270,16 +274,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     clearBB(&tebanKikiB);
     BitBoard9x9 uwateKikiB;
     clearBB(&uwateKikiB);
-    int testpt = 0x101c0e05;
-	//      0001 0
-	// 000 0001 11
-	// 00 0000 111
-	// 0 0000 0101
-	// f7fbfdfe
-	// dfeff7fb
-	
-	// GI: 0x28000e00
-	// static uint32_t GI_pttn = 0x00150007;
+
 
     // まずは盤上の駒移動から
     // 予定: 壁ゴマの位置にある場合は、移動制限
@@ -421,11 +416,17 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     break;
                 case GI:
 					{
-						bool canmove=(oute_num<2 && 
-								(kabegomaInfo[y][x]!=HorizPin));
 						setBitsBB(&tebanKikiB, x, y, GI_pttn);
-						if (canmove)
-						for (int r=0; r<5; r++) {
+						if(oute_num>=2 || kabegomaInfo[y][x]==HorizPin) break;
+						int rs,re;
+						switch(kabegomaInfo[y][x]) {
+							case VertPin: rs=0;re=1; break;
+							case HorizPin: rs=0;re=0; break;
+							case LNanamePin :rs=1;re=3; break;
+							case RNanamePin: rs=3;re=5; break;
+							default: rs=0;re=5; break;
+						}
+						for (int r=rs; r<re; r++) {
 							to_x = x+GI_range[r][0];
 							to_y = y+GI_range[r][1];
 							
@@ -436,7 +437,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 							to_k = shogiBan[to_y][to_x];
 							
 							if (to_k == EMP || (to_k & UWATE) ) {// 味方がいなければ進める
-								
+								if (oute_num == 1 && !getBitBB(&outePosKikiB, to_x, to_y)) continue; 
 								cs->type = SASHITE_IDOU;
 								cs->idou.to_y = to_y;
 								cs->idou.to_x = to_x;
