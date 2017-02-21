@@ -31,11 +31,13 @@ inline void clearBB(BitBoard9x9 *b){
 }
 
 inline void setBitBB(BitBoard9x9 *b, int x, int y){
+	assert(x>=0 && x<BanX && y>=0 && y<BanY);
     if (y<6) b->topmid |= ((uint64_t)1 << (BanX*y + x));
     else b->bottom |= (1u << (BanX*(y-6) + x));
 }
 
 inline void setBitBB(BitBoard9x9 *b, int n){
+	assert(n>=0 && n<81);
     if (n<54) b->topmid |= ((uint64_t)1 << n);
     else b->bottom |= (1u << (n-54));
 }
@@ -372,20 +374,19 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     break;
                 case KE: 
 					{
-						bool canmove=(oute_num<2 && 
-								(kabegomaInfo[y][x]==NoPin));
-						setBitBB(&tebanKikiB, x-1, y-2);
-						setBitBB(&tebanKikiB, x+1, y-2);
-						if (canmove)
+						bool cantmove=(oute_num>=2 || 
+								(kabegomaInfo[y][x]!=NoPin));
 						for (int r=0; r<2; r++) {
 							to_x = x+KE_range[r][0];
 							to_y = y+KE_range[r][1];
 							
-							to_k = shogiBan[to_y][to_x];
-							
 							// 盤外チェック
 							if (to_x<0 || to_x>=BanX) continue;
 							if (to_y<0 || to_y>=BanY) continue;
+							setBitBB(&tebanKikiB, to_x, to_y);
+
+							if (cantmove) continue;
+							to_k = shogiBan[to_y][to_x];
 
 							if (to_k == EMP || (to_k & UWATE)) {// 味方がいなければ進める
 								if (oute_num == 1 && !getBitBB(&outePosKikiB, to_x, to_y)) continue; 
