@@ -466,6 +466,10 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
                     break;
                 case KI:
+				case NFU:
+				case NKY:
+				case NKE:
+				case NGI:
 					{
 						setBitsBB(&tebanKikiB, x, y, KI_pttn);
 						int rs,re;
