@@ -132,7 +132,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     Koma teban = uwate ? UWATE : (Koma)0;
     
     static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
-    static int KI_range[6][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{0,1}};
+    static int KI_range[6][2] = {{0,-1},{0,1},{-1,0},{1,0},{-1,-1},{1,-1}};
     static int GI_range[5][2] = {{0,-1}, {-1,-1}, {1,1}, {1,-1}, {-1,1}};
     static int KE_range[2][2] = {{-1,-2}, {1,-2}};
     static int UMA_range[4][2] = {{0,-1}, {-1,0}, {1,0},{0,1}};
@@ -144,6 +144,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 	// 0 0000 0101
 
 	static uint32_t GI_pttn = 0x00140007;
+	static uint32_t KI_pttn = 0x00080a07;
 
     // ↓あまりいらないかも
     static int bangaiInfo[BanY][BanX] = {
@@ -372,7 +373,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         }
                     }
                     break;
-                case KE: 
+                case KE: break;
 					{
 						bool cantmove=(oute_num>=2 || 
 								(kabegomaInfo[y][x]!=NoPin));
@@ -415,7 +416,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						}
 					}
                     break;
-                case GI:
+                case GI: break;
 					{
 						setBitsBB(&tebanKikiB, x, y, GI_pttn);
 						if(oute_num>=2 || kabegomaInfo[y][x]==HorizPin) break;
@@ -464,42 +465,41 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						}
 					}
                     break;
-                case KI: break;
-                    for (int r=0; r<6; r++) {
-                        to_x = x+KI_range[r][0];
-                        to_y = y+KI_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        to_k = shogiBan[to_y][to_x];
-                        setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
+                case KI:
+					{
+						setBitsBB(&tebanKikiB, x, y, KI_pttn);
+						int rs,re;
+						switch(kabegomaInfo[y][x]) {
+							case VertPin: rs=0;re=2; break;
+							case HorizPin: rs=2;re=4; break;
+							case LNanamePin :rs=4;re=5; break;
+							case RNanamePin: rs=5;re=6; break;
+							default: rs=0;re=6; break;
+						}
+						for (int r=rs; r<re; r++) {
+							to_x = x+KI_range[r][0];
+							to_y = y+KI_range[r][1];
+							
+							// 盤外チェック
+							if (to_x<0 || to_x>=BanX) continue;
+							if (to_y<0 || to_y>=BanY) continue;
+							
+							to_k = shogiBan[to_y][to_x];
 
-                        if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                            if (getBitBB(&kabePosB, x, y)) {   // 壁駒の場合は判断が必要
-                                if (ou_x == x) { // 縦以外動いたらダメ
-                                    if (KI_range[r][0] != 0) continue;
-                                } else if (ou_y == y) { // 横以外動いたらダメ
-                                    if (KI_range[r][1] != 0) continue;
-                                } else if ((ou_x<x && ou_y<y) || (ou_x>x && ou_y>y)) {    // "\" 以外動いたらダメ
-                                    if (KI_range[r][0] != KI_range[r][1]) continue;
-                                } else {    // "/" 以外動いたらダメ
-                                    if ((KI_range[r][0]+KI_range[r][1])) continue;
-                                }
-                            }
-                            setBitBB(&tebanKikiB, to_x, to_y);
-                            cs->type = SASHITE_IDOU;
-                            cs->idou.to_y = to_y;
-                            cs->idou.to_x = to_x;
-                            cs->idou.from_y = y;
-                            cs->idou.from_x = x;
-                            cs->idou.nari = 0;
-                            cs++;
-                            te_num++;
-                        }
-                    }
-                    break;
+							if (to_k == EMP || (to_k & UWATE)) {// 味方がいなければ進める
+								if (oute_num == 1 && !getBitBB(&outePosKikiB, to_x, to_y)) continue; 
+								cs->type = SASHITE_IDOU;
+								cs->idou.to_y = to_y;
+								cs->idou.to_x = to_x;
+								cs->idou.from_y = y;
+								cs->idou.from_x = x;
+								cs->idou.nari = 0;
+								cs++;
+								te_num++;
+							}
+						}
+					}
+					break;
                 
                 case UMA: break;  // 十字4箇所だけ
                     for (int r=0; r<4; r++) {
