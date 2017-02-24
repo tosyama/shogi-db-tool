@@ -128,8 +128,9 @@ enum PinInfo {
 };
 
 
-Sashite *createSashiteUMA(Sashite *te, BitBoard9x9 *tebanKikiB, Koma (*shogiBan)[BanX], int x, int y,
-		int (*kabegomaInfo)[BanX], int oute_num, BitBoard9x9 *outePosKikiB);
+Sashite *createSashiteUMA(Sashite *te, BitBoard9x9 *tebanKikiB,
+		Koma (*shogiBan)[BanX], int x, int y,
+		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
@@ -511,7 +512,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                 
                 case UMA:  // 十字4箇所だけ
 					cs=createSashiteUMA(cs, &tebanKikiB, shogiBan, x, y,
-						kabegomaInfo, oute_num, &outePosKikiB);
+						kabegomaInfo[y][x], oute_num, &outePosKikiB);
 				case KA: break; // 馬と共通。馬のときは成りなし
                     {
                         // {x移動,y移動,終了条件x,終了条件y}
@@ -849,7 +850,7 @@ Sashite *createSashiteUMA(
 	BitBoard9x9 *tebanKikiB,
 	Koma (*shogiBan)[BanX],
 	int x, int y,
-	int (*kabegomaInfo)[BanX],
+	int pin,
 	int oute_num,
 	BitBoard9x9 *outePosKikiB)
 {
@@ -860,7 +861,7 @@ Sashite *createSashiteUMA(
     if(oute_num>=2) return te;
 	
 	int rs,re;
-	switch(kabegomaInfo[y][x]) {
+	switch(pin) {
 		case VertPin: rs=0;re=2; break;
 		case HorizPin: rs=2;re=4; break;
 		case LNanamePin :
