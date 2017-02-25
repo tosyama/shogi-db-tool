@@ -336,13 +336,13 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						bool canmove=(oute_num<2 && 
 								(kabegomaInfo[y][x]==NoPin
 									|| kabegomaInfo[y][x]==VertPin));
-						bool ext = false;
-                        for (to_y=y-1; to_y>=0 && !ext; to_y--) {
+						bool stoploop = false;
+                        for (to_y=y-1; to_y>=0 && !stoploop; to_y--) {
                             to_k = shogiBan[to_y][x];
                             setBitBB(&tebanKikiB, x, to_y);  // 効きの記録
 							if (to_k != EMP) 
 								if (to_k & UWATE){
-									ext=true; // exit loop
+									stoploop=true;
 									// check to_k is pinned.
 									for (int yy=to_y-1; yy>=0; yy--) {
 										if (shogiBan[yy][x] != EMP) {
@@ -892,4 +892,77 @@ Sashite *createSashiteUMA(
         }
     }
     return te;
+}
+
+Sashite *createSashiteKA(
+	Sashite *te,
+	BitBoard9x9 *tebanKikiB,
+	Koma (*shogiBan)[BanX],
+	int x, int y,
+	int pin,
+	int oute_num,
+	BitBoard9x9 *outePosKikiB,
+	int (*ukabegomaInfo)[BanX],
+	bool isKA)
+{
+	// {x移動,y移動,終了条件x,終了条件y,有効pin}
+	int scanInf[4][5] = {
+	    {-1,-1,-1,-1,LNanamePin},{1,1,BanX,BanY,LNanamePin},
+	    {1,-1,BanX,-1,RNanamePin},{-1,1,-1,BanY,RNanamePin}
+	};
+	for (int r=0; r<4; r++) {
+		int inc_x = scanInf[r][0];
+		int inc_y = scanInf[r][1];
+		int end_x = scanInf[r][2];
+		int end_y = scanInf[r][3];
+        bool canmove = (oute_num<2 && (pin==NoPin || pin==scanInf[r][4]));
+        bool stoploop = false;
+        
+        int to_x = x+inc_x;
+        int to_y = y+inc_y;
+		for (;
+                to_x != end_x && to_y != end_y && !stoploop;
+                to_x+=inc_x, to_y+=inc_y) {
+			Koma to_k = shogiBan[to_y][to_x];
+			setBitBB(tebanKikiB, to_x, to_y);  // 効きの記録
+
+            if (to_k != EMP)
+                if (to_k & UWATE) {
+                    stoploop = true;
+                    // check to_k is pinned.
+					int xx=to_x+inc_x;
+					int yy=to_y+inc_y;
+					for (; xx!=end_x&&yy!=end_y; xx+=inc_x,yy+=inc_y) {
+						if (shogiBan[yy][xx] != EMP) {
+							if (shogiBan[yy][xx]==UOU)
+								ukabegomaInfo[to_y][to_x]=scanInf[r][4];
+							break;
+						}
+					}
+                } else break; // exit loop
+            
+            if (canmove) {
+                if (oute_num == 1 && !getBitBB(outePosKikiB, to_x, to_y)) continue; 
+				te->type = SASHITE_IDOU;
+				te->idou.to_y = to_y;
+				te->idou.to_x = to_x;
+				te->idou.from_y = y;
+				te->idou.from_x = x;
+				te->idou.nari = 0;
+				te++;
+
+				// 成りの指手
+				if ((to_y < 3 || y < 3) && isKA) {
+					te->type = SASHITE_IDOU;
+					te->idou.to_y = to_y;
+					te->idou.to_x = to_x;
+					te->idou.from_y = y;
+					te->idou.from_x = x;
+					te->idou.nari = 1;
+					te++;
+				}
+			}
+		}
+	}
+	return te;
 }
