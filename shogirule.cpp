@@ -521,65 +521,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					cs=createSashiteKA(cs, &tebanKikiB, ukabegomaInfo,
 							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==KA);
 					break;
-                    {
-                        // {x移動,y移動,終了条件x,終了条件y}
-                        int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
-                        for (int r=0; r<4; r++) {
-                            int inc_x = scanInf[r][0];
-                            int inc_y = scanInf[r][1];
-                            int end_x = scanInf[r][2];
-                            int end_y = scanInf[r][3];
-                            
-                            
-                            for (to_x = x+inc_x,to_y = y+inc_y; to_x != end_x && to_y != end_y; to_x+=inc_x, to_y+=inc_y) {
-                                to_k = shogiBan[to_y][to_x];
-                                setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
-                                
-                                if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                                    if (getBitBB(&kabePosB, x, y)) {// 壁駒の場合は王と同じ斜め向きなら可
-                                        if (ou_x == x || ou_y == y) { // 王が横か縦の場合は斜めに動けない
-                                            continue;
-                                        } else if ((ou_x<x && ou_y<y) || (ou_x>x && ou_y>y)) {    // "\" 以外動いたらダメ
-                                            if (inc_x != inc_y) {
-                                                if (to_k != EMP) break;
-                                                else continue;
-                                            }
-                                        } else {
-                                            if (inc_x == inc_y) {
-                                                if (to_k != EMP) break;
-                                                else continue;
-                                            };
-                                        }
-                                    }
-                                        
-                                    cs->type = SASHITE_IDOU;
-                                    cs->idou.to_y = to_y;
-                                    cs->idou.to_x = to_x;
-                                    cs->idou.from_y = y;
-                                    cs->idou.from_x = x;
-                                    cs->idou.nari = 0;
-                                    cs++;
-                                    te_num++;
-                                    
-                                    // 成りの指手
-                                    if ((to_y < 3 || y < 3) && k==KA) {
-                                        cs->type = SASHITE_IDOU;
-                                        cs->idou.to_y = to_y;
-                                        cs->idou.to_x = to_x;
-                                        cs->idou.from_y = y;
-                                        cs->idou.from_x = x;
-                                        cs->idou.nari = 1;
-                                        cs++;
-                                        te_num++;
-                                    }
-                                    if (to_k != EMP) break;
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    break;
                 
                 case RYU: break; // 斜め4つだけ
                     for (int r=0; r<4; r++) {
