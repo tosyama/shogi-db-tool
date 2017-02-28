@@ -124,9 +124,7 @@ inline int isKoma(Koma k, int koma_flag, int uwate)
 
 enum PinInfo {
     NoPin = 0, VertPin, HorizPin, LNanamePin, RNanamePin
-    
 };
-
 
 Sashite *createSashiteUMA(Sashite *te, BitBoard9x9 *tebanKikiB,
 		Koma (*shogiBan)[BanX], int x, int y,
@@ -134,7 +132,7 @@ Sashite *createSashiteUMA(Sashite *te, BitBoard9x9 *tebanKikiB,
 Sashite *createSashiteKA( Sashite *te, BitBoard9x9 *tebanKikiB,
 	int (*ukabegomaInfo)[BanX],
 	Koma (*shogiBan)[BanX], int x, int y,
-	int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool isKA);
+	int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool nari);
 Sashite *createSashiteRYU(Sashite *te, BitBoard9x9 *tebanKikiB,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
@@ -182,7 +180,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     int bangai = bangaiInfo[ou_y][ou_x];
 	int oute_num = 0;
     BitBoard9x9 outePosKikiB;    // 王手ゴマの位置を記録
-    BitBoard9x9 kabePosB;   // pinされている駒の位置を記録
     int kabegomaInfo[BanY][BanX] = {    // pinされている駒のと向きを記録
         {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
         {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
@@ -195,7 +192,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     };
     
     clearBB(&outePosKikiB);
-    clearBB(&kabePosB);
     {
         if (!(bangai & OutF2L) && isRangeKE(shogiBan[ou_y-2][ou_x-1],1)) {   // 桂王手の検出
             setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
@@ -245,7 +241,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                                     if (*kk != EMP) {
                                         if (isKoma(*kk, koma_flag, 1)) {
                                             printf("壁駒%d\n", i);
-                                            setBitBB(&kabePosB, (int)(k-&shogiBan[0][0]));
 											int n = (int)(k-&shogiBan[0][0]);
 											*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
                                         }
@@ -270,7 +265,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         if (*kk != EMP) {
                             if (isKoma(*kk, koma_flag, 1)) {
                                 printf("壁駒%d\n", i);
-                                setBitBB(&kabePosB, (int)(k-&shogiBan[0][0]));
 								int n = (int)(k-&shogiBan[0][0]);
 								*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
                             }
@@ -526,7 +520,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 				case KA: break; // 馬と共通。馬のときは成りなし
 					cs=createSashiteKA(cs, &tebanKikiB, ukabegomaInfo,
-							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==KA);
+							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==UMA);
 					break;
                 
                 case RYU:  // 斜め4つだけ
@@ -538,71 +532,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
                 
-                    {
-                        // {移動幅, 終了条件}, {変数}　// メモ: 最適化が効きにくいかも
-                        int scanInf1[4][2] = {{-1,-1},{-1,-1},{1,BanY},{1,BanX}};
-                        int *scanInf2[4] = {&to_y, &to_x, &to_y, &to_x};
-                        
-                        for (int r=0; r<4; r++) {
-                            int* to_xy =scanInf2[r];
-                            int inc =scanInf1[r][0], end =scanInf1[r][1];
-                            to_x = x;
-                            to_y = y;
-                            (*to_xy)+= inc;
-                            for (;*to_xy != end;(*to_xy)+=inc) {
-                                to_k = shogiBan[to_y][to_x];
-                                setBitBB(&tebanKikiB, to_x, to_y);  // 効きの記録
-                                
-                                if (to_k == EMP || (to_k & UWATE) != teban) {// 味方がいなければ進める
-                                    if (getBitBB(&kabePosB, x, y)) {// 壁駒の場合は王と縦と並んでて縦移動、もしくは横に並んでて横移動なら可
-                                        if (ou_x == x) {
-                                            if(x != to_x) {
-                                                if (to_k != EMP) break;
-                                                else continue;
-                                            }
-                                        } else if (ou_y == y) {
-                                            if(y != to_y) {
-                                                if (to_k != EMP) break;
-                                                else continue;
-                                            }
-                                        } else { //斜め壁なので基本動けない
-                                            if (to_k != EMP) break;
-                                            else continue;
-                                        }
-                                    }
-                                    
-                                    cs->type = SASHITE_IDOU;
-                                    cs->idou.to_y = to_y;
-                                    cs->idou.to_x = to_x;
-                                    cs->idou.from_y = y;
-                                    cs->idou.from_x = x;
-                                    cs->idou.nari = 0;
-                                    cs++;
-                                    te_num++;
-                                    
-                                    // 成りの指手
-                                    if ((to_y < 3 || y < 3) && k==HI) {
-                                        cs->type = SASHITE_IDOU;
-                                        cs->idou.to_y = to_y;
-                                        cs->idou.to_x = to_x;
-                                        cs->idou.from_y = y;
-                                        cs->idou.from_x = x;
-                                        cs->idou.nari = 1;
-                                        cs++;
-                                        te_num++;
-                                    }
-                                    if (to_k != EMP) break;
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-                        
-                    }
-                    break;
-
                 // 上手の効き記録
-                    
                 case UFU: 
                     to_y = y+1;
                     setBitBB(&uwateKikiB, x, to_y);
@@ -906,68 +836,19 @@ Sashite *createSashiteKA(
 	int pin,
 	int oute_num,
 	BitBoard9x9 *outePosKikiB,
-	bool isKA)
+	bool nari)
 {
 	// {x移動,y移動,終了条件x,終了条件y,有効pin}
 	int scanInf[4][5] = {
 	    {-1,-1,-1,-1,LNanamePin},{1,1,BanX,BanY,LNanamePin},
 	    {1,-1,BanX,-1,RNanamePin},{-1,1,-1,BanY,RNanamePin}
 	};
-	for (int r=0; r<4; r++) {
-		int inc_x = scanInf[r][0];
-		int inc_y = scanInf[r][1];
-		int end_x = scanInf[r][2];
-		int end_y = scanInf[r][3];
-        bool canmove = (oute_num<2 && (pin==NoPin || pin==scanInf[r][4]));
-        bool stoploop = false;
-        
-        int to_x = x+inc_x;
-        int to_y = y+inc_y;
-		for (;
-                to_x != end_x && to_y != end_y && !stoploop;
-                to_x+=inc_x, to_y+=inc_y) {
-			Koma to_k = shogiBan[to_y][to_x];
-			setBitBB(tebanKikiB, to_x, to_y);  // 効きの記録
-
-            if (to_k != EMP)
-                if (to_k & UWATE) {
-                    stoploop = true;
-                    // check to_k is pinned.
-					int xx=to_x+inc_x;
-					int yy=to_y+inc_y;
-					for (; xx!=end_x&&yy!=end_y; xx+=inc_x,yy+=inc_y) {
-						if (shogiBan[yy][xx] != EMP) {
-							if (shogiBan[yy][xx]==UOU)
-								ukabegomaInfo[to_y][to_x]=scanInf[r][4];
-							break;
-						}
-					}
-                } else break; // exit loop
-            
-            if (canmove) {
-                if (oute_num == 1 && !getBitBB(outePosKikiB, to_x, to_y)) continue; 
-				te->type = SASHITE_IDOU;
-				te->idou.to_y = to_y;
-				te->idou.to_x = to_x;
-				te->idou.from_y = y;
-				te->idou.from_x = x;
-				te->idou.nari = 0;
-				te++;
-
-				// 成りの指手
-				if ((to_y < 3 || y < 3) && isKA) {
-					te->type = SASHITE_IDOU;
-					te->idou.to_y = to_y;
-					te->idou.to_x = to_x;
-					te->idou.from_y = y;
-					te->idou.from_x = x;
-					te->idou.nari = 1;
-					te++;
-				}
-			}
-		}
-	}
-	return te;
+	return createSashiteTobiGoma(
+        te, tebanKikiB, ukabegomaInfo,
+        shogiBan, x, y, pin,
+        oute_num, outePosKikiB, nari,
+        scanInf, 4
+        );
 }
 
 Sashite *createSashiteRYU(
