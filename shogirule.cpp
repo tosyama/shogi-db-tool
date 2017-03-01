@@ -704,6 +704,58 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
     *n = cs-s;
 }
 
+Sashite *createSashitePttn(
+	Sashite *te,
+	BitBoard9x9 *tebanKikiB,
+	Koma (*shogiBan)[BanX],
+	int x, int y,
+	int oute_num,
+	BitBoard9x9 *outePosKikiB,
+	uint32_t pattern,
+	int (*range)[2],
+	int rs, int re,
+	bool nari)
+{
+    setBitsBB(tebanKikiB, x, y, pattern);
+    if(oute_num>=2) return te;
+	
+	for (int r=rs; r<re; r++) {
+        int to_x = x+range[r][0];
+        int to_y = y+range[r][1];
+        
+        // 盤外チェック
+        if (to_x<0 || to_x>=BanX) continue;
+        if (to_y<0 || to_y>=BanY) continue;
+        
+        Koma to_k = shogiBan[to_y][to_x];
+        
+        if (to_k == EMP || (to_k & UWATE)) {// 味方がいなければ進める
+            if (oute_num == 1 && !getBitBB(outePosKikiB, to_x, to_y)) continue;
+            
+            te->type = SASHITE_IDOU;
+            te->idou.to_y = to_y;
+            te->idou.to_x = to_x;
+            te->idou.from_y = y;
+            te->idou.from_x = x;
+            te->idou.nari = 0;
+            te++;
+            
+        	// 成りの指手
+			if (!nari && (to_y < 3 || y < 3)) {
+				te->type = SASHITE_IDOU;
+				te->idou.to_y = to_y;
+				te->idou.to_x = to_x;
+				te->idou.from_y = y;
+				te->idou.from_x = x;
+				te->idou.nari = 1;
+				te++;
+			}
+        }
+    }
+    return te;
+}
+
+
 inline Sashite *createSashiteTobiGoma(
 	Sashite *te,
 	BitBoard9x9 *tebanKikiB,
@@ -863,9 +915,6 @@ Sashite *createSashiteRYU(
 	const uint32_t RYU_pttn = 0x00140005;
     static int RYU_range[4][2] = {{-1,-1}, {1,1}, {1,-1}, {-1,1}};
 
-    setBitsBB(tebanKikiB, x, y, RYU_pttn);
-    if(oute_num>=2) return te;
-	
 	int rs,re;
 	switch(pin) {
 		case VertPin: 
@@ -875,29 +924,9 @@ Sashite *createSashiteRYU(
 		case RNanamePin: rs=2;re=4; break;
 		default: rs=0;re=4; break;
 	}
-	for (int r=rs; r<re; r++) {
-        int to_x = x+RYU_range[r][0];
-        int to_y = y+RYU_range[r][1];
-        
-        // 盤外チェック
-        if (to_x<0 || to_x>=BanX) continue;
-        if (to_y<0 || to_y>=BanY) continue;
-        
-        Koma to_k = shogiBan[to_y][to_x];
-        
-        if (to_k == EMP || (to_k & UWATE)) {// 味方がいなければ進める
-            if (oute_num == 1 && !getBitBB(outePosKikiB, to_x, to_y)) continue;
-            
-            te->type = SASHITE_IDOU;
-            te->idou.to_y = to_y;
-            te->idou.to_x = to_x;
-            te->idou.from_y = y;
-            te->idou.from_x = x;
-            te->idou.nari = 0;
-            te++;
-        }
-    }
-    return te;
+	return te=createSashitePttn(te,tebanKikiB,
+			shogiBan, x, y, oute_num, outePosKikiB,
+			RYU_pttn, RYU_range, rs, re, true);
 }
 
 Sashite *createSashiteHI(
@@ -921,5 +950,5 @@ Sashite *createSashiteHI(
         shogiBan, x, y, pin,
         oute_num, outePosKikiB, nari,
         scanInf, 4
-        );
+    );
 }
