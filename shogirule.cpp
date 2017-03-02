@@ -126,6 +126,9 @@ enum PinInfo {
     NoPin = 0, VertPin, HorizPin, LNanamePin, RNanamePin
 };
 
+Sashite *createSashiteGI(Sashite *te, BitBoard9x9 *tebanKikiB,
+		Koma (*shogiBan)[BanX], int x, int y,
+		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
 Sashite *createSashiteKI(Sashite *te, BitBoard9x9 *tebanKikiB,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
@@ -431,52 +434,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
                     break;
                 case GI: break;
-					{
-						setBitsBB(&tebanKikiB, x, y, GI_pttn);
-						if(oute_num>=2 || kabegomaInfo[y][x]==HorizPin) break;
-						int rs,re;
-						switch(kabegomaInfo[y][x]) {
-							case VertPin: rs=0;re=1; break;
-							case LNanamePin :rs=1;re=3; break;
-							case RNanamePin: rs=3;re=5; break;
-							default: rs=0;re=5; break;
-						}
-						for (int r=rs; r<re; r++) {
-							to_x = x+GI_range[r][0];
-							to_y = y+GI_range[r][1];
-							
-							// 盤外チェック
-							if (to_x<0 || to_x>=BanX) continue;
-							if (to_y<0 || to_y>=BanY) continue;
-							
-							to_k = shogiBan[to_y][to_x];
-							
-							if (to_k == EMP || (to_k & UWATE) ) {// 味方がいなければ進める
-								if (oute_num == 1 && !getBitBB(&outePosKikiB, to_x, to_y)) continue; 
-								cs->type = SASHITE_IDOU;
-								cs->idou.to_y = to_y;
-								cs->idou.to_x = to_x;
-								cs->idou.from_y = y;
-								cs->idou.from_x = x;
-								cs->idou.nari = 0;
-								cs++;
-								te_num++;
-								
-								// 成りの指手
-								if (to_y < 3 || y<=2) {
-									cs->type = SASHITE_IDOU;
-									cs->idou.to_y = to_y;
-									cs->idou.to_x = to_x;
-									cs->idou.from_y = y;
-									cs->idou.from_x = x;
-									cs->idou.nari = 1;
-									cs++;
-									te_num++;
-								}
-								
-							}
-						}
-					}
+				    cs=createSashiteGI(cs, &tebanKikiB, shogiBan, x, y,
+							kabegomaInfo[y][x], oute_num, &outePosKikiB);
                     break;
                 case KI:
 				case NFU:
@@ -795,6 +754,34 @@ inline Sashite *createSashiteTobiGoma(
 		}
 	}
 	return te;
+}
+
+Sashite *createSashiteGI(
+	Sashite *te,
+	BitBoard9x9 *tebanKikiB,
+	Koma (*shogiBan)[BanX],
+	int x, int y,
+	int pin,
+	int oute_num,
+	BitBoard9x9 *outePosKikiB)
+{
+	const uint32_t GI_pttn = 0x00140007;
+    static int GI_range[5][2] = {{0,-1}, {-1,-1}, {1,1}, {1,-1}, {-1,1}};
+	
+	setBitsBB(tebanKikiB, x, y, GI_pttn);
+
+	int rs,re;
+	switch(pin) {
+		case VertPin: rs=0;re=1; break;
+		case HorizPin: return te;
+		case LNanamePin :rs=1;re=3; break;
+		case RNanamePin: rs=3;re=5; break;
+		default: rs=0;re=5; break;
+	}
+
+	return te=createSashiteRange(te,tebanKikiB,
+			shogiBan, x, y, oute_num, outePosKikiB,
+			GI_range, rs, re, true);
 }
 
 Sashite *createSashiteKI(
