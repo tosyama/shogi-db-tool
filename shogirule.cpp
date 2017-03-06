@@ -180,7 +180,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 
 	static uint32_t GI_pttn = 0x00140007;
 	static uint32_t KI_pttn = 0x00080a07;
-
     // ↓あまりいらないかも
     static int bangaiInfo[BanY][BanX] = {
         {11,3,3, 3,3,3, 3,3,19},{9,1,1, 1,1,1, 1,1,17},{8,0,0, 0,0,0, 0,0,16},
@@ -361,8 +360,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                 
                 // 上手の効き記録
                 case UFU: 
-                    to_y = y+1;
-                    setBitBB(&uwateKikiB, x, to_y);
+                    assert(y < (BanY-1));
+                    setBitBB(&uwateKikiB, x, y+1);
                     break;
                     
                 case UKY: 
@@ -379,23 +378,22 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     break;
 
 				case UGI:
-                    for (int r=0; r<5; r++) {
-                        to_x = x-GI_range[r][0];
-                        to_y = y-GI_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        setBitBB(&uwateKikiB, to_x, to_y);
-                    }
-                    break;
+					{
+						const uint32_t UGI_pttn = 0x001c0005;
+						setBitsBB(&uwateKikiB, x, y, UGI_pttn);
+					}
+					break;
                 
 				case UKI:
 				case UNFU:
 				case UNKY:
 				case UNKE:
 				case UNGI:
+					{
+						const uint32_t UKI_pttn = 0x001c0a02;
+						setBitsBB(&uwateKikiB, x, y, UKI_pttn);
+					}
+					break;
                     for (int r=0; r<6; r++) {
                         to_x = x-KI_range[r][0];
                         to_y = y-KI_range[r][1];
@@ -520,7 +518,8 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                         
     // 予定: 打ち
     // 予定: 効きから打ちふ詰めも検出
-	printBB(stdout, &tebanKikiB);    
+	//printBB(stdout, &tebanKikiB);    
+	printBB(stdout, &uwateKikiB);    
    /* for (int y=0; y<BanY; y++) {
         for (int x=0; x<BanX; x++) {
 			printf("%d", ukabegomaInfo[y][x]);
