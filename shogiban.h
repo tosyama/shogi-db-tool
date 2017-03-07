@@ -71,3 +71,13 @@ void printKyokumen(FILE *f, ShogiKykumen *shogi);
 
 Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari);
 void sashite2(ShogiKykumen *shogi, int uwate, Koma koma, int to_x, int to_y);
+
+inline Koma koma_move(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari)
+{
+    return sashite1(shogi, INNER_X(from_x),INNER_Y(from_y),INNER_X(to_x),INNER_Y(to_y),nari);
+}
+
+inline void koma_uchi(ShogiKykumen *shogi, int uwate, Koma koma, int to_x, int to_y)
+{
+    sashite2(shogi, uwate, koma, INNER_X(to_x),INNER_Y(to_y));
+}
