@@ -433,17 +433,11 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                     break;            
 
 				case UOU:
-                    for (int r=0; r<8; r++) {
-                        to_x = x-OU_range[r][0];
-                        to_y = y-OU_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        setBitBB(&uwateKikiB, to_x, to_y);
-                    }
-                    break;
+                	{
+                	    const uint32_t OU_pttn = 0x001c0a07;
+						setBitsBB(&uwateKikiB, x, y, OU_pttn);
+					}
+					break;
 
 				default:
                     break;
