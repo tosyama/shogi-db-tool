@@ -79,22 +79,6 @@ void printBB(FILE *f, const BitBoard9x9 *b)
     }
 }
 
-
-// 番外の場合はEMPを返す
-inline Koma getKoma(Koma (*s)[BanX], int x, int y)
-{
-    if (y<0 || y>=BanY || x<0 || x>=BanX) return EMP;
-    return s[y][x];
-}
-inline Koma getKomaTop(Koma (*s)[BanX], int x, int y) { return (y<0) ? EMP : s[y][x]; }
-inline Koma getKomaTopL(Koma (*s)[BanX], int x, int y) { return (y<0 || x <0) ? EMP : s[y][x]; }
-inline Koma getKomaTopR(Koma (*s)[BanX], int x, int y) { return (y<0 || x >=BanX) ? EMP : s[y][x]; }
-inline Koma getKomaL(Koma (*s)[BanX], int x, int y) { return (x<0) ? EMP : s[y][x]; }
-inline Koma getKomaR(Koma (*s)[BanX], int x, int y) { return (x>=BanX) ? EMP : s[y][x]; }
-inline Koma getKomaBot(Koma (*s)[BanX], int x, int y) { return (y>=BanY) ? EMP : s[y][x]; }
-inline Koma getKomaBotL(Koma (*s)[BanX], int x, int y) { return (y>=BanY || x <0) ? EMP : s[y][x]; }
-inline Koma getKomaBotR(Koma (*s)[BanX], int x, int y) { return (y>=BanY || x >=BanX) ? EMP : s[y][x]; }
-
 //駒の効きの判定
 // 桂馬の効きか
 inline int isRangeKE(Koma k, int uwate)
@@ -394,29 +378,12 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 						setBitsBB(&uwateKikiB, x, y, UKI_pttn);
 					}
 					break;
-                    for (int r=0; r<6; r++) {
-                        to_x = x-KI_range[r][0];
-                        to_y = y-KI_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        setBitBB(&uwateKikiB, to_x, to_y);
-                    }
-                    break;
 
 				case UUMA:
-                    for (int r=0; r<4; r++) {
-                        to_x = x-UMA_range[r][0];
-                        to_y = y-UMA_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        setBitBB(&uwateKikiB, to_x, to_y);
-                    }
+				    {
+				        const uint32_t UMA_pttn = 0x00080a02;
+						setBitsBB(&uwateKikiB, x, y, UMA_pttn);
+					}
 
 				case UKA:
                     {
@@ -439,16 +406,9 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
                  
                     break;
                 case URYU:
-                    for (int r=0; r<4; r++) {
-                        to_x = x+RYU_range[r][0];
-                        to_y = y+RYU_range[r][1];
-                        
-                        // 盤外チェック
-                        if (to_x<0 || to_x>=BanX) continue;
-                        if (to_y<0 || to_y>=BanY) continue;
-                        
-                        to_k = shogiBan[to_y][to_x];
-                        setBitBB(&uwateKikiB, to_x, to_y);  // 効きの記録
+                	{
+                	    const uint32_t RYU_pttn = 0x00140005;
+						setBitsBB(&uwateKikiB, x, y, RYU_pttn);
 					}
 
                case UHI:
@@ -653,6 +613,7 @@ inline Sashite *createSashiteTobiGoma(
 	}
 	return te;
 }
+
 Sashite *createSashiteFU(
 	Sashite *te,
 	BitBoard9x9 *tebanKikiB,
@@ -681,6 +642,7 @@ Sashite *createSashiteFU(
 			shogiBan, x, y, oute_num, outePosKikiB,
 			FU_range, rs, re, false, 0);
 }
+
 Sashite *createSashiteKY(
 	Sashite *te,
 	BitBoard9x9 *tebanKikiB,
