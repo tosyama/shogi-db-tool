@@ -19,6 +19,54 @@
 
 #define min(a,b)	((a)<(b)?(a):(b))
 
+#if 0
+// product
+#define FUBR
+#define KYBR
+#define KEBR
+#define GIBR
+#define KIBR
+#define UMABR
+#define KABR
+#define RYUBR
+#define HIBR
+
+#define UFUBR
+#define UKYBR
+#define UKEBR
+#define UGIBR
+#define UKIBR
+#define UUMABR
+#define UKABR
+#define URYUBR
+#define UHIBR
+#define UOUBR
+
+#else
+// debug break for develop
+#define FUBR    //break
+#define KYBR    break
+#define KEBR    break
+#define GIBR    break
+#define KIBR    break
+#define UMABR   break
+#define KABR    break
+#define RYUBR   break
+#define HIBR    break
+
+#define UFUBR   break
+#define UKYBR   break
+#define UKEBR   break
+#define UGIBR   break
+#define UKIBR   break
+#define UUMABR  break
+#define UKABR   break
+#define URYUBR  break
+#define UHIBR   break
+#define UOUBR   break
+
+#endif
+
 // work用 bitBoard
 typedef struct {
 	uint64_t topmid;
@@ -300,19 +348,19 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 		for(int x=0; x<BanX; x++) {
 			Koma k = shogiBan[y][x];
 			switch (k) {
-				case FU: 
+				case FU: FUBR;
 					cs=createSashiteFU(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
-				case KY: break;
+				case KY: KYBR;
 					cs=createSashiteKY(cs, &tebanKikiB, ukabegomaInfo,
 							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
-				case KE: break;
+				case KE: KEBR;
 					cs=createSashiteKE(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
-				case GI: break;
+				case GI: GIBR;
 					cs=createSashiteGI(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
@@ -320,35 +368,35 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 				case NFU:
 				case NKY:
 				case NKE:
-				case NGI:break; 
+				case NGI: KIBR; 
 					cs=createSashiteKI(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				
-				case UMA:  // 十字4箇所だけ
+				case UMA: UMABR; // 十字4箇所だけ
 					cs=createSashiteUMA(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
-				case KA: break; // 馬と共通。馬のときは成りなし
+				case KA: KABR; // 馬と共通。馬のときは成りなし
 					cs=createSashiteKA(cs, &tebanKikiB, ukabegomaInfo,
 							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==UMA);
 					break;
 				
-				case RYU:  // 斜め4つだけ
+				case RYU: RYUBR; // 斜め4つだけ
 					cs=createSashiteRYU(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 
-				case HI: break;  // 竜と共通。竜のときは成りなし
+				case HI: HIBR;  // 竜と共通。竜のときは成りなし
 					cs=createSashiteHI(cs, &tebanKikiB, ukabegomaInfo,
 							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
 				
 				// 上手の効き記録
-				case UFU: 
+				case UFU: UFUBR;
 					assert(y < (BanY-1));
 					setBitBB(&uwateKikiB, x, y+1);
 					break;
 					
-				case UKY: 
+				case UKY: UKYBR;
 					for (to_y=y+1; to_y<BanY; to_y++) {
 						to_k = shogiBan[to_y][x];
 						setBitBB(&uwateKikiB, x, to_y);
@@ -356,12 +404,12 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
 					break;
 				
-				case UKE:
+				case UKE: UKEBR;
 					if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
-					if (x<BanX) setBitBB(&uwateKikiB, x+1, y+2);
+					if (x<(BanX-1)) setBitBB(&uwateKikiB, x+1, y+2);
 					break;
 
-				case UGI:
+				case UGI: UGIBR;
 					{
 						const uint32_t UGI_pttn = 0x001c0005;
 						setBitsBB(&uwateKikiB, x, y, UGI_pttn);
@@ -372,20 +420,20 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 				case UNFU:
 				case UNKY:
 				case UNKE:
-				case UNGI:
+				case UNGI: UKIBR;
 					{
 						const uint32_t UKI_pttn = 0x001c0a02;
 						setBitsBB(&uwateKikiB, x, y, UKI_pttn);
 					}
 					break;
 
-				case UUMA:
+				case UUMA: UUMABR;
 					{
 						const uint32_t UMA_pttn = 0x00080a02;
 						setBitsBB(&uwateKikiB, x, y, UMA_pttn);
 					}
 
-				case UKA:
+				case UKA: UKABR;
 					{
 						// {x移動,y移動,終了条件x,終了条件y}
 						int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -405,13 +453,13 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
 				 
 					break;
-				case URYU:
+				case URYU: URYUBR;
 					{
 						const uint32_t RYU_pttn = 0x00140005;
 						setBitsBB(&uwateKikiB, x, y, RYU_pttn);
 					}
 
-			   case UHI:
+			   case UHI: UHIBR;
 					{
 						// {移動幅, 終了条件}, {変数}　// メモ: 最適化が効きにくいかも
 						int scanInf1[4][2] = {{-1,-1},{-1,-1},{1,BanY},{1,BanX}};
@@ -432,7 +480,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					}
 					break;			  
 
-				case UOU:
+				case UOU: UOUBR;
 					{
 						const uint32_t OU_pttn = 0x001c0a07;
 						setBitsBB(&uwateKikiB, x, y, OU_pttn);
@@ -670,7 +718,7 @@ Sashite *createSashiteKE(
 	assert(y>1);
 
 	if (x>0) setBitBB(tebanKikiB, x-1, y-2);
-	if (x<BanX) setBitBB(tebanKikiB, x+1, y-2);
+	if (x<(BanX-1)) setBitBB(tebanKikiB, x+1, y-2);
 	if (pin!=NoPin) return te;
 
 	return te=createSashiteRange(te,tebanKikiB,

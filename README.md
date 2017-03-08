@@ -1,4 +1,4 @@
-# shoji-db-tool
+# shogi-db-tool
 
 将棋局面コード  
 
