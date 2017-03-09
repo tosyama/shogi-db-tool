@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
     
     Sashite s[200];
     int n;
-    createSashite(&shogi, 0, s, &n);
+    createSashite(&shogi, s, &n);
     
     Sashite si[200];
     si[0].type = SASHITE_RESULT;
@@ -40,7 +40,7 @@ int main(int argc, const char * argv[]) {
         i+=cmd;
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
-        createSashite(&shogi, 0, s, &n);
+        createSashite(&shogi, s, &n);
         fprintf(logf, "手の数: %d\n", n);
 
         for (int j=0; j<n; j++) {
@@ -91,7 +91,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
     printKyokumen(stdout, shogi);
     
     while (1) {
-        printf("move:1-9 1-9 1-9 1-9 + uchi:[11-17 or 21-27] 1-0 1-9\ntemodoshi:-1, print: p end:0,\n>");
+        printf("move:1-9 1-9 1-9 1-9 + uchi:[11-17 or 21-27] 1-0 1-9\ntemodoshi:-1, print: p, quit:q,\n>");
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
@@ -117,7 +117,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             } else if (buf[0] == '-') {
                 temodoshi(shogi, s);
                 return -1;
-            } else if (buf[0] == '0') { // end
+            } else if (buf[0] == 'q') { // end
                 return 0;
             } else if (buf[0] == 'p') { // print
                 printKyokumen(stdout, shogi);

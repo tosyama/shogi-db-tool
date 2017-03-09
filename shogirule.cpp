@@ -44,10 +44,10 @@
 
 #else
 // debug break for develop
-#define FUBR    //break
+#define FUBR    break
 #define KYBR    break
 #define KEBR    break
-#define GIBR    break
+#define GIBR    //break
 #define KIBR    break
 #define UMABR   break
 #define KABR    break
@@ -128,31 +128,11 @@ void printBB(FILE *f, const BitBoard9x9 *b)
 }
 
 //駒の効きの判定
-// 桂馬の効きか
-inline int isRangeKE(Koma k, int uwate)
-{
-	if (uwate) return (k==UKE); else return (k==KE);
-}
-
 inline int isKoma(Koma k, int koma_flag, int uwate)
 {
 	if (uwate && !(k&UWATE)) return 0;
 	return koma_flag & (1 << (k&KOMATYPE2));
 }
-
-//現在の位置から盤外の位置を示すフラグ
-#define OutF2	 1
-#define OutF1	 2
-#define OutB	 4
-#define OutL	8
-#define OutR	16
-
-#define OutF2L	9
-#define OutF2R	17
-#define OutF1L	10
-#define OutF1R	18
-#define OutBL	12
-#define OutBR	20
 
 enum PinInfo {
 	NoPin = 0, VertPin, HorizPin, LNanamePin, RNanamePin
@@ -190,64 +170,32 @@ Sashite *createSashiteHI(Sashite *te, BitBoard9x9 *tebanKikiB,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool nari);
 
 // 手の生成
-void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
+void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 {
 	Koma (*shogiBan)[BanX] = shogi->shogiBan;
 	int (*komaDai)[DaiN] = shogi->komaDai;
 	*n = 0;
-	Sashite *cs = s;
-	Koma teban = uwate ? UWATE : (Koma)0;
+	Sashite *cs = s;	
 	
-	static int OU_range[8][2] = {{-1,-1}, {0,-1}, {1,-1}, {-1,0},{1,0},{-1,1},{0,1},{1,1}};
-	static int KI_range[6][2] = {{0,-1},{0,1},{-1,0},{1,0},{-1,-1},{1,-1}};
-	static int GI_range[5][2] = {{0,-1}, {-1,-1}, {1,1}, {1,-1}, {-1,1}};
-	static int KE_range[2][2] = {{-1,-2}, {1,-2}};
-	static int UMA_range[4][2] = {{0,-1}, {-1,0}, {1,0},{0,1}};
-	static int RYU_range[4][2] = {{-1,-1}, {1,-1}, {-1,1},{1,1}};
-	
-	//		0001 0
-	// 000 0001 11
-	// 00 0000 111
-	// 0 0000 0101
-
-	static uint32_t GI_pttn = 0x00140007;
-	static uint32_t KI_pttn = 0x00080a07;
-	// ↓あまりいらないかも
-	static int bangaiInfo[BanY][BanX] = {
-		{11,3,3, 3,3,3, 3,3,19},{9,1,1, 1,1,1, 1,1,17},{8,0,0, 0,0,0, 0,0,16},
-		{8,0,0, 0,0,0, 0,0,16}, {8,0,0, 0,0,0, 0,0,16}, {8,0,0, 0,0,0, 0,0,16},
-		{8,0,0, 0,0,0, 0,0,16}, {8,0,0, 0,0,0, 0,0,16}, {12,4,4, 4,4,4, 4,4,20}
-	};
-	
-	// 予定: 直接王手の検出。自ゴマは直接王手ゴマをとるか、王が移動するしかない
-	// 予定: 間接王手の効きの検出。効きに入るか王手ゴマを取るか(二重王手の場合不可)、王が移動
-	// 予定: 自王位置から、間接王手と壁となる自ゴマの位置をマーク
 	int ou_x = shogi->ou_x;
 	int ou_y = shogi->ou_y;
-	int bangai = bangaiInfo[ou_y][ou_x];
 	int oute_num = 0;
 	BitBoard9x9 outePosKikiB;	 // 王手ゴマの位置を記録
-	int kabegomaInfo[BanY][BanX] = {	// pinされている駒のと向きを記録
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-	};
-	int ukabegomaInfo[BanY][BanX] = {	 // pinされている駒のと向きを記録
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-		{0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0}, {0,0,0, 0,0,0, 0,0,0},
-	};
+	int kabegomaInfo[BanY][BanX] = { 0 };	// pinされている駒のと向きを記録
+	int ukabegomaInfo[BanY][BanX] = { 0 };	 // pinされている駒のと向きを記録
 	
 	clearBB(&outePosKikiB);
 	{
-		if (!(bangai & OutF2L) && isRangeKE(shogiBan[ou_y-2][ou_x-1],1)) {	 // 桂王手の検出
-			setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
-			oute_num++;
-			printf("左桂王手\n");
-		} if (!(bangai & OutF2R) && isRangeKE(shogiBan[ou_y-2][ou_x+1],1)) {	// 桂王手の検出
-			setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
-			oute_num++;
-			printf("右桂王手\n");
+		if (ou_y >= 2) {
+			if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
+				setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
+				oute_num++;
+				printf("左桂王手\n");
+			} else if (ou_x <= 7 && shogiBan[ou_y-2][ou_x+1]==UKE) {
+				setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
+				oute_num++;
+				printf("右桂王手\n");
+			}
 		}
 
 		// {検出移動幅, ループ数, 直接王手駒, 間接王手駒, Pinタイプ}
@@ -277,7 +225,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 					for(k+=inc;k!=end_pos; k+=inc) {
 						setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
 						if (*k != EMP) {
-							if ((*k & UWATE) != teban) { // 相手駒
+							if (*k & UWATE) { // 相手駒
 								if(isKoma(*k, koma_flag, 1)) {
 									printf("間接王手%d\n", i);
 									setBitBB(&outePosKikiB, &workKikiB);
@@ -298,7 +246,7 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 							break;
 						}
 					}
-				} else if ((*k & UWATE) != teban) { // 相手駒 直接王手の判別
+				} else if (*k & UWATE) { // 相手駒 直接王手の判別
 					if(isKoma(*k, scanInf[i][2], 1)) {
 						setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
 						oute_num++;
@@ -341,7 +289,6 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 	// 予定: 壁ゴマの位置にある場合は、移動制限
 	// 予定: 駒の効きも記録
 	// 予定: 成対応必要
-	int te_num = 0;
 	int to_y, to_x;
 	Koma to_k;
 	for (int y=0; y<BanY; y++) {
@@ -514,14 +461,13 @@ void createSashite(ShogiKykumen *shogi, int uwate, Sashite *s, int *n)
 			cs->idou.from_x = ou_x;
 			cs->idou.nari = 0;
 			cs++;
-			te_num++;
 		}
 	}*/
 						
 	// 予定: 打ち
 	// 予定: 効きから打ちふ詰めも検出
-	//printBB(stdout, &tebanKikiB);    
-	printBB(stdout, &uwateKikiB);	 
+	printBB(stdout, &tebanKikiB);    
+//	printBB(stdout, &uwateKikiB);	 
    /* for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
 			printf("%d", ukabegomaInfo[y][x]);
