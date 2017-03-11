@@ -53,18 +53,18 @@
 #define KABR    break
 #define RYUBR   break
 #define HIBR    break
-#define OUBR	//if(0)
+#define OUBR	if(0)
 
-#define UFUBR   //break
-#define UKYBR   //break
-#define UKEBR   //break
-#define UGIBR   //break
-#define UKIBR   //break
-#define UUMABR  //break
-#define UKABR   //break
-#define URYUBR  //break
-#define UHIBR   //break
-#define UOUBR   //break
+#define UFUBR   break
+#define UKYBR   break
+#define UKEBR   break
+#define UGIBR   break
+#define UKIBR   break
+#define UUMABR  break
+#define UKABR   break
+#define URYUBR  break
+#define UHIBR   break
+#define UOUBR   break
 
 #endif
 
@@ -285,14 +285,10 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	
 	BitBoard9x9 tebanKikiB;
 	clearBB(&tebanKikiB);
-	BitBoard9x9 uwateKikiB;
+	BitBoard9x9 uwateKikiB; // 相手駒の効き 王は壁にしない
 	clearBB(&uwateKikiB);
 
-
 	// まずは盤上の駒移動から
-	// 予定: 壁ゴマの位置にある場合は、移動制限
-	// 予定: 駒の効きも記録
-	// 予定: 成対応必要
 	int to_y, to_x;
 	Koma to_k;
 	for (int y=0; y<BanY; y++) {
@@ -465,6 +461,18 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 		printf("\n");
 	}*/
 	
+	for (int y=0; y<BanY; y++) 
+		for(int x=0; x<BanX; x++) 
+			if (shogiBan[y][x]==EMP) {
+				if (y>=1 && komaDai[0][FU]) {
+					cs->type = SASHITE_UCHI;
+					cs->uchi.uwate = 0;
+					cs->uchi.to_y = y;
+					cs->uchi.to_x = x;
+					cs->uchi.koma = FU;
+					cs++;
+				}
+			}
 	*n = cs-s;
 }
 
