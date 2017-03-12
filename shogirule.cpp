@@ -287,6 +287,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	clearBB(&tebanKikiB);
 	BitBoard9x9 uwateKikiB; // 相手駒の効き 王は壁にしない
 	clearBB(&uwateKikiB);
+	unsigned int usedLineFU = 0;
 
 	// まずは盤上の駒移動から
 	int to_y, to_x;
@@ -295,7 +296,9 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 		for(int x=0; x<BanX; x++) {
 			Koma k = shogiBan[y][x];
 			switch (k) {
-				case FU: FUBR;
+				case FU:
+					usedLineFU |= (1u << x);
+					FUBR;
 					cs=createSashiteFU(cs, &tebanKikiB, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
@@ -464,7 +467,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	for (int y=0; y<BanY; y++) 
 		for(int x=0; x<BanX; x++) 
 			if (shogiBan[y][x]==EMP) {
-				if (y>=1 && komaDai[0][FU]) {
+				if (y>=1 && komaDai[0][FU]
+					&& !(1u &(usedLineFU >> x))) {
 					cs->type = SASHITE_UCHI;
 					cs->uchi.uwate = 0;
 					cs->uchi.to_y = y;
