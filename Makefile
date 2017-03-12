@@ -19,4 +19,7 @@ depend: $(OBJS:.o=.cpp)
 	-@ $(RM) depend.inc
 	-@ for i in $^; do $(CXX) -MM $$i | sed "s/\ [_a-zA-Z0-9][_a-zA-Z0-9]*\.cpp//g" >> depend.inc; done
 -include depend.inc
+.PHONY: package
+package:
+	apt-get -y install libsqlite3-dev
 
