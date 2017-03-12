@@ -469,12 +469,14 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 			if (shogiBan[y][x]==EMP) {
 				if (y>=1 && komaDai[0][FU]
 					&& !(1u &(usedLineFU >> x))) {
-					cs->type = SASHITE_UCHI;
-					cs->uchi.uwate = 0;
-					cs->uchi.to_y = y;
-					cs->uchi.to_x = x;
-					cs->uchi.koma = FU;
-					cs++;
+					if (shogiBan[y-1][x] != UOU || false) {
+						cs->type = SASHITE_UCHI;
+						cs->uchi.uwate = 0;
+						cs->uchi.to_y = y;
+						cs->uchi.to_x = x;
+						cs->uchi.koma = FU;
+						cs++;
+					}
 				}
 			}
 	*n = cs-s;
