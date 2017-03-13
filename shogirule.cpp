@@ -174,8 +174,8 @@ Sashite *createSashiteHI(Sashite *te, BitBoard9x9 *tebanKikiB,
 Sashite *createSashiteOU(Sashite *te, BitBoard9x9 *tebanKikiB,
 		Koma (*shogiBan)[BanX], int x, int y,
 		BitBoard9x9 *noUwateKikiB);
-Sashite *createSashiteUchi(Sashite *te, int(*komaDai)[DaiN], Koma k,
-		Koma (*shogiBan)[BanX], int x, int y, int uchiLimit=0);
+Sashite *createSashiteUchi(Sashite *te, Koma k,
+		Koma (*shogiBan)[BanX], int uchiLimit=0);
 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
@@ -483,9 +483,10 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 						cs++;
 					}
 				}
-				cs = createSashiteUchi(cs, komaDai, KY, shogiBan, x, y, 1);
 
 			}
+	if (komaDai[0][KY])
+		cs = createSashiteUchi(cs, KY, shogiBan, 1);
 	*n = cs-s;
 }
 
@@ -854,16 +855,19 @@ Sashite *createSashiteOU(Sashite *te, BitBoard9x9 *tebanKikiB,
 			OU_range, 0, 8, true);
 }
 
-Sashite *createSashiteUchi(Sashite *te, int(*komaDai)[DaiN], Koma k,
-		Koma (*shogiBan)[BanX], int x, int y, int uchiLimit)
+Sashite *createSashiteUchi(Sashite *te, Koma k,
+		Koma (*shogiBan)[BanX], int uchiLimit)
 {
-	if (y>=uchiLimit && komaDai[0][k]) {
-		te->type = SASHITE_UCHI;
-		te->uchi.uwate = 0;
-		te->uchi.to_y = y;
-		te->uchi.to_x = x;
-		te->uchi.koma = k;
-		te++;
-	}
+	for (int y=uchiLimit; y<BanY; y++)
+		for (int x=0; x<BanX; x++) {
+			if (shogiBan[y][x]==EMP) {
+				te->type = SASHITE_UCHI;
+				te->uchi.uwate = 0;
+				te->uchi.to_y = y;
+				te->uchi.to_x = x;
+				te->uchi.koma = k;
+				te++;
+			}
+		}
 	return te;
 }
