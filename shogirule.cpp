@@ -487,6 +487,16 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 			}
 	if (komaDai[0][KY])
 		cs = createSashiteUchi(cs, KY, shogiBan, 1);
+	if (komaDai[0][KE])
+		cs = createSashiteUchi(cs, KE, shogiBan, 2);
+	if (komaDai[0][GI])
+		cs = createSashiteUchi(cs, GI, shogiBan);
+	if (komaDai[0][KI])
+		cs = createSashiteUchi(cs, KI, shogiBan);
+	if (komaDai[0][KA])
+		cs = createSashiteUchi(cs, KA, shogiBan);
+	if (komaDai[0][HI])
+		cs = createSashiteUchi(cs, HI, shogiBan);
 	*n = cs-s;
 }
 

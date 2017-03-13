@@ -92,6 +92,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
     
     while (1) {
         printf("move:1-9 1-9 1-9 1-9 + uchi:[11-17 or 21-27] 1-0 1-9\ntemodoshi:-1, print: p, quit:q,\n>");
+		fflush(stdout);
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
