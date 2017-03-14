@@ -42,7 +42,6 @@
 #define UHIBR
 #define UOUBR
 
-#define UCFUBR
 #else
 // debug break for develop
 #define FUBR    break
@@ -67,7 +66,6 @@
 #define UHIBR   break
 #define UOUBR   break
 
-#define UCFUBR	if(0)
 #endif
 
 // work用 bitBoard
@@ -176,6 +174,8 @@ Sashite *createSashiteOU(Sashite *te, BitBoard9x9 *tebanKikiB,
 		BitBoard9x9 *noUwateKikiB);
 Sashite *createSashiteUchi(Sashite *te, Koma k,
 		Koma (*shogiBan)[BanX], int uchiLimit=0);
+Sashite *createSashiteUchiFU(Sashite *te, Koma (*shogiBan)[BanX],
+		unsigned int usedLine, BitBoard9x9 *tebanKikiB);
 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
@@ -468,23 +468,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 		printf("\n");
 	}*/
 	
-	for (int y=0; y<BanY; y++) 
-		for(int x=0; x<BanX; x++) 
-			if (shogiBan[y][x]==EMP) {
-				UCFUBR
-				if (y>=1 && komaDai[0][FU]
-					&& !(1u &(usedLineFU >> x))) {
-					if (shogiBan[y-1][x] != UOU || false) {
-						cs->type = SASHITE_UCHI;
-						cs->uchi.uwate = 0;
-						cs->uchi.to_y = y;
-						cs->uchi.to_x = x;
-						cs->uchi.koma = FU;
-						cs++;
-					}
-				}
-
-			}
+	if (komaDai[0][FU])
+		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, &tebanKikiB);
 	if (komaDai[0][KY])
 		cs = createSashiteUchi(cs, KY, shogiBan, 1);
 	if (komaDai[0][KE])
@@ -879,5 +864,26 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 				te++;
 			}
 		}
+	return te;
+}
+
+Sashite *createSashiteUchiFU(Sashite *te, 
+		Koma (*shogiBan)[BanX], unsigned int usedLine, BitBoard9x9 *tebanKikiB)
+{
+	for (int x=0; x<BanX; x++) {
+		if(1u &(usedLine >> x)) continue;
+		for (int y=1; y<BanY; y++) {
+			if (shogiBan[y][x]==EMP) {
+				if (shogiBan[y-1][x] != UOU || false) {
+					te->type = SASHITE_UCHI;
+					te->uchi.uwate = 0;
+					te->uchi.to_y = y;
+					te->uchi.to_x = x;
+					te->uchi.koma = FU;
+					te++;
+				}
+			}
+		}
+	}
 	return te;
 }
