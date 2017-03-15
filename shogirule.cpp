@@ -67,7 +67,6 @@
 #define UOUBR   break
 
 #endif
-
 // work用 bitBoard
 typedef struct {
 	uint64_t topmid;
@@ -95,6 +94,12 @@ inline void setBitBB(BitBoard9x9 *b, const BitBoard9x9 *orb)
 {
 	b->topmid |= orb->topmid;
 	b->bottom |= orb->bottom;
+}
+
+inline void setAndBitsBB(BitBoard9x9 *b, const BitBoard9x9 *andb)
+{
+	b->topmid &= andb->topmid;
+	b->bottom &= andb->bottom;
 }
 
 inline void setBitsBB(BitBoard9x9 *b, int x, int y, uint32_t pattern)
@@ -867,8 +872,22 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 	return te;
 }
 
-bool checkUchiFU()
+bool checkUchiFU(
+		Koma (*shogiBan)[BanX], int x, int y,
+		BitBoard9x9 tebanKikiB, int (*ukabegomaInfo)[BanX])
 {
+	const uint32_t OU_pttn = 0x001c0a07;
+	// 王手の判定
+	if (shogiBan[y-1][x] != UOU) return false;
+	// 王の逃げ場チェック
+	BitBoard9x9 ou_range={0};
+	setBitsBB(&ou_range, x, y-1, OU_pttn);
+	setAndBitsBB(&tebanKikiB, &ou_range);
+	if (tebanKikiB.topmid == ou_range.topmid
+		&& tebanKikiB.bottom == ou_range.bottom)
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -880,7 +899,7 @@ Sashite *createSashiteUchiFU(Sashite *te,
 		if(1u &(usedLine >> x)) continue;
 		for (int y=1; y<BanY; y++) {
 			if (shogiBan[y][x]==EMP) {
-				if (shogiBan[y-1][x] != UOU || !checkUchiFU()) {
+				if (!checkUchiFU(shogiBan, x, y, *tebanKikiB, ukabegomaInfo)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
 					te->uchi.to_y = y;
