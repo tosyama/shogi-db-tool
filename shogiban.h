@@ -65,6 +65,8 @@ typedef struct {
 
 #define INNER_X(x)   (BanX-(x))
 #define INNER_Y(y)   ((y)-1)
+#define STD_X(x)	(BanX-(x))
+#define STD_Y(y)	((y)+1)
 
 void resetShogiBan(ShogiKykumen *shogi);
 void printKyokumen(FILE *f, ShogiKykumen *shogi);

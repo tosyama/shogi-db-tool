@@ -19,7 +19,7 @@
 
 #define min(a,b)	((a)<(b)?(a):(b))
 
-#if 0
+#if 1
 // product
 #define FUBR
 #define KYBR
@@ -30,6 +30,7 @@
 #define KABR
 #define RYUBR
 #define HIBR
+#define OUBR
 
 #define UFUBR
 #define UKYBR

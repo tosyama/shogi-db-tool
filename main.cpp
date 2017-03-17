@@ -18,6 +18,7 @@
 
 static int interactiveCUI(ShogiKykumen *shogi, Sashite *s);
 
+static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *logf = NULL;
 int main(int argc, const char * argv[]) {
     Kifu kifu;
@@ -43,10 +44,22 @@ int main(int argc, const char * argv[]) {
         createSashite(&shogi, s, &n);
         fprintf(logf, "手の数: %d\n", n);
 
+		printKyokumen(logf, &shogi);
         for (int j=0; j<n; j++) {
-            sasu(&shogi, &s[j]);
-            printKyokumen(logf, &shogi);
-            temodoshi(&shogi, &s[j]);
+			if (s[j].type == SASHITE_IDOU) {
+				int x = s[j].idou.from_x;
+				int y = s[j].idou.from_y;
+				fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
+						j+1,
+						komaStr[shogi.shogiBan[y][x]],
+						STD_X(x), STD_Y(y),
+						STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
+						s[j].idou.nari?"+":"");
+			} else if (s[j].type == SASHITE_UCHI)
+				fprintf(logf, "%.2d %s>(%d,%d)\n",
+						j+1,
+						komaStr[s[j].uchi.koma],
+						STD_X(s[j].uchi.to_x), STD_Y(s[j].uchi.to_y));
         }
 
     }
