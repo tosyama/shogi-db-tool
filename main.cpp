@@ -28,8 +28,8 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    if (argc==2 ) {
-		printf("test:%d\n", (int)strlen(argv[1]));
+    if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
+		loadKyokumenFromCode(&shogi, argv[1]);
 	}
     Sashite s[200];
     int n;

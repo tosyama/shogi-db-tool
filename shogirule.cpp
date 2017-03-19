@@ -463,9 +463,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				shogiBan, ou_x, ou_y, &noUwateKiki);
 	}
 							
-	// 予定: 打ち
 	// 予定: 効きから打ちふ詰めも検出
-	printBB(stdout, &tebanKikiB);    
+	//printBB(stdout, &tebanKikiB);    
 //	printBB(stdout, &uwateKikiB);	 
    /* for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
