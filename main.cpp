@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
@@ -27,8 +28,9 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    koma_move(&shogi, 3,3,3,4,0);
-    
+    if (argc==2 ) {
+		printf("test:%d\n", (int)strlen(argv[1]));
+	}
     Sashite s[200];
     int n;
     createSashite(&shogi, s, &n);
