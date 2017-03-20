@@ -141,9 +141,11 @@ inline int isKoma(Koma k, int koma_flag, int uwate)
 	return koma_flag & (1 << (k&KOMATYPE2));
 }
 
-enum PinInfo {
-	NoPin = 0, VertPin, HorizPin, LNanamePin, RNanamePin
-};
+#define NoPin		0
+#define VertPin		1
+#define HorizPin	2
+#define LNanamePin	4
+#define RNanamePin	8
 
 Sashite *createSashiteFU(Sashite *te, BitBoard9x9 *tebanKikiB,
 		Koma (*shogiBan)[BanX], int x, int y,
@@ -878,6 +880,12 @@ inline bool existsToriGomaInLine(
 		int direct, int indirect, int allow_pin,
 		int (*ukabegomaInfo)[BanX])
 {
+	if (maxloop==0) return false;
+	x+=incx; y+=incy;
+	if (shogiBan[y][x] != EMP) {
+		return (isKoma(shogiBan[y][x],direct,1)
+			&& !(ukabegomaInfo[y][x]&(~allow_pin)));
+	}
 	return false;
 }
 
