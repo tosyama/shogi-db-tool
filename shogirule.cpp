@@ -911,6 +911,7 @@ bool checkUchiFU(
 		&& tebanKikiB.bottom == ou_range.bottom)
 	{
 		if (existsToriGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
+		if (existsToriGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
 		return true;
 	}
 	return false;
