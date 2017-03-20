@@ -918,6 +918,15 @@ bool checkUchiFU(
 		if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
 		if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
 		if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,ukabegomaInfo)) return false;
+		if (y >= 2) {
+			if (x >= 1 && shogiBan[y-2][x-1]==UKE) {
+				if (ukabegomaInfo[y-2][x-1]==NoPin)
+					return false;
+			} else if (x <= 7 && shogiBan[y-2][x+1]==UKE) {
+				if (ukabegomaInfo[y-2][x+1]==NoPin)
+					return false;
+			}
+		}
 		return true;
 	}
 	return false;
