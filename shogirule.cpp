@@ -872,6 +872,15 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 	return te;
 }
 
+inline bool existsToriGomaInLine(
+		Koma (*shogiBan)[BanX], int x, int y,
+		int incx, int incy, int maxloop,
+		int direct, int indirect, int allow_pin,
+		int (*ukabegomaInfo)[BanX])
+{
+	return false;
+}
+
 bool checkUchiFU(
 		Koma (*shogiBan)[BanX], int x, int y,
 		BitBoard9x9 tebanKikiB, int (*ukabegomaInfo)[BanX])
@@ -886,6 +895,7 @@ bool checkUchiFU(
 	if (tebanKikiB.topmid == ou_range.topmid
 		&& tebanKikiB.bottom == ou_range.bottom)
 	{
+		if (existsToriGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
 		return true;
 	}
 	return false;
