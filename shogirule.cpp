@@ -874,7 +874,7 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 	return te;
 }
 
-inline bool existsToriGomaInLine(
+inline bool existsKikiGomaInLine(
 		Koma (*shogiBan)[BanX], int x, int y,
 		int incx, int incy, int maxloop,
 		int direct, int indirect, int allow_pin,
@@ -910,8 +910,14 @@ bool checkUchiFU(
 	if (tebanKikiB.topmid == ou_range.topmid
 		&& tebanKikiB.bottom == ou_range.bottom)
 	{
-		if (existsToriGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
-		if (existsToriGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
+		// Check exists haraigoma
+		if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,1,0,BanX-1-x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
+		if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,ukabegomaInfo)) return false;
 		return true;
 	}
 	return false;
