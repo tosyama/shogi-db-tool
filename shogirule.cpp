@@ -886,6 +886,13 @@ inline bool existsToriGomaInLine(
 		return (isKoma(shogiBan[y][x],direct,1)
 			&& !(ukabegomaInfo[y][x]&(~allow_pin)));
 	}
+	for (int i=1; i<maxloop; i++) {
+		x+=incx; y+=incy;
+		if (shogiBan[y][x] != EMP) {
+			return (isKoma(shogiBan[y][x],indirect,1)
+					&& !(ukabegomaInfo[y][x]&(~allow_pin)));
+		}
+	}
 	return false;
 }
 
