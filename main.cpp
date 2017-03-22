@@ -101,8 +101,9 @@ int main(int argc, const char * argv[]) {
 static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
+	int (*komaDai)[DaiN] = shogi->komaDai;
     char buf[80];
-    int fx, fy, tx, ty;
+    int k, fx, fy, tx, ty;
     printKyokumen(stdout, shogi);
     
     while (1) {
@@ -128,8 +129,27 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                         sasu(shogi,s);
                         return 1;
                     }
-
                 }
+            } else if (buf[0] == '^' || buf[0] == 'v') {
+				int n = buf[1] - '0';
+				tx = buf[2] - '0';
+				ty = buf[3] - '0';
+				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+					int u = buf[0] == 'v' ? 1 : 0;
+					for (k=1;k<DaiN;k++) {
+						if (komaDai[u][k]>0 && (--n)==0) {
+							if (shogiBan[INNER_Y(ty)][INNER_X(tx)]==EMP) {
+								s->type = SASHITE_UCHI;
+								s->uchi.uwate = u;
+								s->uchi.to_x = INNER_X(tx);
+								s->uchi.to_y = INNER_Y(ty);
+								s->uchi.koma = (Koma)k;
+								sasu(shogi,s);
+								return 1;
+							} else break;
+						}
+					}
+				}
             } else if (buf[0] == '-') {
                 temodoshi(shogi, s);
                 return -1;

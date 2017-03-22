@@ -919,7 +919,7 @@ bool checkUchiFU(
 	if (tebanKikiB.topmid == ou_range.topmid
 		&& tebanKikiB.bottom == ou_range.bottom)
 	{
-		// Check exists haraigoma
+		// 打った歩が取られるか？
 		if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
 		if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
 		if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
