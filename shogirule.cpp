@@ -866,37 +866,63 @@ inline bool existsKikiGomaInLine(
 	return false;
 }
 
+inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
+{
+	for (int y=0; y<BanY; y++)
+		for (int x=0; x<BanX; x++) {
+			switch(shogiBan[y][x]) {
+				case EMP: break;
+				case FU: setBitBB(escapeAreaB, x, y-1); break;
+				case KY: break;
+				case KE:
+					if (x>=1) setBitBB(escapeAreaB, x-1, y-2);
+					if (x<=BanX-2) setBitBB(escapeAreaB, x+1, y-2);
+					break;
+				case GI: setBitsBB(escapeAreaB, x, y, GI_pttn); break;
+				case KI: case NFU: case NKY: case NKE: case NGI:
+						 setBitsBB(escapeAreaB, x, y, KI_pttn); break;
+				case UMA: setBitsBB(escapeAreaB, x, y, UMA_pttn);
+				case KA: break;
+				case RYU: setBitsBB(escapeAreaB, x, y, RYU_pttn);
+				case HI: break;
+				case OU: setBitsBB(escapeAreaB, x, y, OU_pttn); break;
+				default: setBitBB(escapeAreaB, x, y); break;
+			}
+		}
+}
+
 bool checkUchiFU(
 		Koma (*shogiBan)[BanX], int x, int y,
 		int (*ukabegomaInfo)[BanX])
 {
-	BitBoard9x9 tebanKikiB={0};
 	// 王手の判定
 	if (shogiBan[y-1][x] != UOU) return false;
-	// 王の逃げ場チェック
-	BitBoard9x9 ou_range={0};
-	setBitsBB(&ou_range, x, y-1, OU_pttn);
-	setAndBitsBB(&tebanKikiB, &ou_range);
-	if (tebanKikiB.topmid == ou_range.topmid
-		&& tebanKikiB.bottom == ou_range.bottom)
-	{
-		// 打った歩が取られるか？
-		if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,1,0,BanX-1-x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
-		if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,ukabegomaInfo)) return false;
-		if (y >= 2) {
-			if (x >= 1 && shogiBan[y-2][x-1]==UKE) {
-				if (ukabegomaInfo[y-2][x-1]==NoPin)
-					return false;
-			} else if (x <= 7 && shogiBan[y-2][x+1]==UKE) {
-				if (ukabegomaInfo[y-2][x+1]==NoPin)
-					return false;
-			}
+	// 打った歩が取られるか？
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,0,BanX-1-x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,ukabegomaInfo)) return false;
+	if (y >= 2) {
+		if (x >= 1 && shogiBan[y-2][x-1]==UKE) {
+			if (ukabegomaInfo[y-2][x-1]==NoPin)
+				return false;
+		} else if (x <= 7 && shogiBan[y-2][x+1]==UKE) {
+			if (ukabegomaInfo[y-2][x+1]==NoPin)
+				return false;
 		}
+	}
+	// 王の逃げ場チェック
+	BitBoard9x9 escapeAreaB={0};
+	BitBoard9x9 ou_range={0};
+	createEscapeArea(&escapeAreaB,shogiBan);
+	setBitsBB(&ou_range, x, y-1, OU_pttn);
+	setAndBitsBB(&escapeAreaB, &ou_range);
+	if (escapeAreaB.topmid == ou_range.topmid
+		&& escapeAreaB.bottom == ou_range.bottom)
+	{
 		return true;
 	}
 	return false;
