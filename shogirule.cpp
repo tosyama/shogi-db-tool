@@ -186,8 +186,7 @@ Sashite *createSashiteOU(Sashite *te,
 Sashite *createSashiteUchi(Sashite *te, Koma k,
 		Koma (*shogiBan)[BanX], int uchiLimit=0);
 Sashite *createSashiteUchiFU(Sashite *te, Koma (*shogiBan)[BanX],
-		unsigned int usedLine,
-		BitBoard9x9 *uwatePosB, int (*ukabegomaInfo)[BanX]);
+		unsigned int usedLine, int (*ukabegomaInfo)[BanX]);
 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
@@ -300,7 +299,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	}*/
 	
 	BitBoard9x9 uwateKikiB = {0}; // 相手駒の効き 王は壁にしない
-	BitBoard9x9 uwatePosB = {0};
 	unsigned int usedLineFU = 0;
 
 	// まずは盤上の駒移動から
@@ -357,12 +355,10 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				// 上手の効きと位置の記録
 				case UFU: UFUBR;
 					assert(y < (BanY-1));
-					setBitBB(&uwatePosB, x, y);
 					setBitBB(&uwateKikiB, x, y+1);
 					break;
 					
 				case UKY: UKYBR;
-					setBitBB(&uwatePosB, x, y);
 					for (to_y=y+1; to_y<BanY; to_y++) {
 						to_k = shogiBan[to_y][x];
 						setBitBB(&uwateKikiB, x, to_y);
@@ -371,13 +367,11 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					break;
 				
 				case UKE: UKEBR;
-					setBitBB(&uwatePosB, x, y);
 					if (x>0) setBitBB(&uwateKikiB, x-1, y+2);
 					if (x<(BanX-1)) setBitBB(&uwateKikiB, x+1, y+2);
 					break;
 
 				case UGI: UGIBR;
-					setBitBB(&uwatePosB, x, y);
 					{
 						const uint32_t UGI_pttn = 0x001c0005;
 						setBitsBB(&uwateKikiB, x, y, UGI_pttn);
@@ -389,7 +383,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				case UNKY:
 				case UNKE:
 				case UNGI: UKIBR;
-					setBitBB(&uwatePosB, x, y);
 					{
 						const uint32_t UKI_pttn = 0x001c0a02;
 						setBitsBB(&uwateKikiB, x, y, UKI_pttn);
@@ -403,7 +396,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					}
 
 				case UKA: UKABR;
-					setBitBB(&uwatePosB, x, y);
 					{
 						// {x移動,y移動,終了条件x,終了条件y}
 						int scanInf[4][4] = {{-1,-1,-1,-1},{1,-1,BanX,-1},{-1,1,-1,BanY},{1,1,BanX,BanY}};
@@ -430,7 +422,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					}
 
 			   case UHI: UHIBR;
-					setBitBB(&uwatePosB, x, y);
 					{
 						// {移動幅, 終了条件}, {変数}　// メモ: 最適化が効きにくいかも
 						int scanInf1[4][2] = {{-1,-1},{-1,-1},{1,BanY},{1,BanX}};
@@ -452,7 +443,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					break;			  
 
 				case UOU: UOUBR;
-					setBitBB(&uwatePosB, x, y);
 					{
 						const uint32_t OU_pttn = 0x001c0a07;
 						setBitsBB(&uwateKikiB, x, y, OU_pttn);
@@ -485,7 +475,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	}*/
 	
 	if (komaDai[0][FU])
-		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, &uwatePosB, ukabegomaInfo);
+		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, ukabegomaInfo);
 	if (komaDai[0][KY])
 		cs = createSashiteUchi(cs, KY, shogiBan, 1);
 	if (komaDai[0][KE])
@@ -878,7 +868,7 @@ inline bool existsKikiGomaInLine(
 
 bool checkUchiFU(
 		Koma (*shogiBan)[BanX], int x, int y,
-		BitBoard9x9 uwatePosB, int (*ukabegomaInfo)[BanX])
+		int (*ukabegomaInfo)[BanX])
 {
 	BitBoard9x9 tebanKikiB={0};
 	// 王手の判定
@@ -886,7 +876,6 @@ bool checkUchiFU(
 	// 王の逃げ場チェック
 	BitBoard9x9 ou_range={0};
 	setBitsBB(&ou_range, x, y-1, OU_pttn);
-	setBitsBB(&tebanKikiB, &uwatePosB);
 	setAndBitsBB(&tebanKikiB, &ou_range);
 	if (tebanKikiB.topmid == ou_range.topmid
 		&& tebanKikiB.bottom == ou_range.bottom)
@@ -915,13 +904,13 @@ bool checkUchiFU(
 
 Sashite *createSashiteUchiFU(Sashite *te, 
 		Koma (*shogiBan)[BanX], unsigned int usedLine,
-		BitBoard9x9 *uwatePosB, int (*ukabegomaInfo)[BanX])
+		int (*ukabegomaInfo)[BanX])
 {
 	for (int x=0; x<BanX; x++) {
 		if(1u &(usedLine >> x)) continue;
 		for (int y=1; y<BanY; y++) {
 			if (shogiBan[y][x]==EMP) {
-				if (!checkUchiFU(shogiBan, x, y, *uwatePosB, ukabegomaInfo)) {
+				if (!checkUchiFU(shogiBan, x, y, ukabegomaInfo)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
 					te->uchi.to_y = y;
