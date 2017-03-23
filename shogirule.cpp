@@ -866,6 +866,17 @@ inline bool existsKikiGomaInLine(
 	return false;
 }
 
+inline void setKikiLine(BitBoard9x9 *kikiB,
+		Koma (*shogiBan)[BanX], int x, int y,
+		int incx, int incy, int maxloop)
+{
+	for (int i=0; i<maxloop; i++) {
+		x += incx; y+= incy;
+		setBitBB(kikiB, x, y);
+		if (shogiBan[y][x] != EMP) return;
+	}
+}
+
 inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 {
 	for (int y=0; y<BanY; y++)
@@ -873,7 +884,7 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 			switch(shogiBan[y][x]) {
 				case EMP: break;
 				case FU: setBitBB(escapeAreaB, x, y-1); break;
-				case KY: break;
+				case KY: setKikiLine(escapeAreaB, shogiBan, x, y, 0, -1, y); break;
 				case KE:
 					if (x>=1) setBitBB(escapeAreaB, x-1, y-2);
 					if (x<=BanX-2) setBitBB(escapeAreaB, x+1, y-2);
@@ -889,6 +900,7 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 				default: setBitBB(escapeAreaB, x, y); break;
 			}
 		}
+	printBB(stdout, escapeAreaB);
 }
 
 bool checkUchiFU(
