@@ -912,7 +912,7 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 	printBB(stdout, escapeAreaB);
 }
 
-bool checkUchiFU(
+bool checkUchiFUZume(
 		Koma (*shogiBan)[BanX], int x, int y,
 		int (*ukabegomaInfo)[BanX])
 {
@@ -938,14 +938,15 @@ bool checkUchiFU(
 	// 王の逃げ場チェック
 	BitBoard9x9 escapeAreaB={0};
 	BitBoard9x9 ou_range={0};
+	assert(shogiBan[y][x]==EMP);
+	shogiBan[y][x]=FU;
 	createEscapeArea(&escapeAreaB,shogiBan);
+	shogiBan[y][x]=EMP;
 	setBitsBB(&ou_range, x, y-1, OU_pttn);
 	setAndBitsBB(&escapeAreaB, &ou_range);
-	if (escapeAreaB.topmid == ou_range.topmid
-		&& escapeAreaB.bottom == ou_range.bottom)
-	{
-		return true;
-	}
+	if (escapeAreaB.topmid == ou_range.topmid && escapeAreaB.bottom == ou_range.bottom)
+		return true; // 逃げ場なし
+
 	return false;
 }
 
@@ -957,7 +958,7 @@ Sashite *createSashiteUchiFU(Sashite *te,
 		if(1u &(usedLine >> x)) continue;
 		for (int y=1; y<BanY; y++) {
 			if (shogiBan[y][x]==EMP) {
-				if (!checkUchiFU(shogiBan, x, y, ukabegomaInfo)) {
+				if (!checkUchiFUZume(shogiBan, x, y, ukabegomaInfo)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
 					te->uchi.to_y = y;
