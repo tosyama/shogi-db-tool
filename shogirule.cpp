@@ -893,9 +893,18 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 				case KI: case NFU: case NKY: case NKE: case NGI:
 						 setBitsBB(escapeAreaB, x, y, KI_pttn); break;
 				case UMA: setBitsBB(escapeAreaB, x, y, UMA_pttn);
-				case KA: break;
+				case KA: setKikiLine(escapeAreaB, shogiBan, x, y, -1, -1, min(x,y));
+						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, 1, min(BanX-1-x, BanY-1-y));
+						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, -1, min(BanX-1-x, y));
+						 setKikiLine(escapeAreaB, shogiBan, x, y, -1, 1, min(x, BanY-1-y));
+						 break;
 				case RYU: setBitsBB(escapeAreaB, x, y, RYU_pttn);
-				case HI: break;
+				case HI: setKikiLine(escapeAreaB, shogiBan, x, y, 0, -1, y);
+						 setKikiLine(escapeAreaB, shogiBan, x, y, 0, 1, BanY-1-y);
+						 setKikiLine(escapeAreaB, shogiBan, x, y, -1, 0, x);
+						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, 0, BanX-1-x);
+						 break;
+
 				case OU: setBitsBB(escapeAreaB, x, y, OU_pttn); break;
 				default: setBitBB(escapeAreaB, x, y); break;
 			}
