@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
@@ -18,6 +19,7 @@
 
 static int interactiveCUI(ShogiKykumen *shogi, Sashite *s);
 
+static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *logf = NULL;
 int main(int argc, const char * argv[]) {
     Kifu kifu;
@@ -26,8 +28,9 @@ int main(int argc, const char * argv[]) {
     logf = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    koma_move(&shogi, 3,3,3,4,0);
-    
+    if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
+		loadKyokumenFromCode(&shogi, argv[1]);
+	}
     Sashite s[200];
     int n;
     createSashite(&shogi, s, &n);
@@ -43,10 +46,22 @@ int main(int argc, const char * argv[]) {
         createSashite(&shogi, s, &n);
         fprintf(logf, "手の数: %d\n", n);
 
+		printKyokumen(logf, &shogi);
         for (int j=0; j<n; j++) {
-            sasu(&shogi, &s[j]);
-            printKyokumen(logf, &shogi);
-            temodoshi(&shogi, &s[j]);
+			if (s[j].type == SASHITE_IDOU) {
+				int x = s[j].idou.from_x;
+				int y = s[j].idou.from_y;
+				// fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
+				// 		j+1,
+				// 		komaStr[shogi.shogiBan[y][x]],
+				// 		STD_X(x), STD_Y(y),
+				// 		STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
+				// 		s[j].idou.nari?"+":"");
+			} else if (s[j].type == SASHITE_UCHI)
+				fprintf(logf, "%.2d %s>(%d,%d)\n",
+						j+1,
+						komaStr[s[j].uchi.koma],
+						STD_X(s[j].uchi.to_x), STD_Y(s[j].uchi.to_y));
         }
 
     }
@@ -86,12 +101,14 @@ int main(int argc, const char * argv[]) {
 static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
+	int (*komaDai)[DaiN] = shogi->komaDai;
     char buf[80];
-    int fx, fy, tx, ty;
+    int k, fx, fy, tx, ty;
     printKyokumen(stdout, shogi);
     
     while (1) {
-        printf("move:1-9 1-9 1-9 1-9 + uchi:[11-17 or 21-27] 1-0 1-9\ntemodoshi:-1, print: p, quit:q,\n>");
+        printf("move:1-9 1-9 1-9 1-9 + uchi:[^v]1-7 1-9 1-9\nundo:-1, show cd:s print:p, quit:q,\n>");
+		fflush(stdout);
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
@@ -112,8 +129,27 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                         sasu(shogi,s);
                         return 1;
                     }
-
                 }
+            } else if (buf[0] == '^' || buf[0] == 'v') {
+				int n = buf[1] - '0';
+				tx = buf[2] - '0';
+				ty = buf[3] - '0';
+				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+					int u = buf[0] == 'v' ? 1 : 0;
+					for (k=1;k<DaiN;k++) {
+						if (komaDai[u][k]>0 && (--n)==0) {
+							if (shogiBan[INNER_Y(ty)][INNER_X(tx)]==EMP) {
+								s->type = SASHITE_UCHI;
+								s->uchi.uwate = u;
+								s->uchi.to_x = INNER_X(tx);
+								s->uchi.to_y = INNER_Y(ty);
+								s->uchi.koma = (Koma)k;
+								sasu(shogi,s);
+								return 1;
+							} else break;
+						}
+					}
+				}
             } else if (buf[0] == '-') {
                 temodoshi(shogi, s);
                 return -1;
@@ -121,7 +157,11 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                 return 0;
             } else if (buf[0] == 'p') { // print
                 printKyokumen(stdout, shogi);
-            }
+            } else if (buf[0] == 's') { // show code
+				char code[KykumenCodeLen];
+				createKyokumenCode(code, shogi, 0);
+				printf("%s\n", code);
+			}
         } else {
             return 0;
         }

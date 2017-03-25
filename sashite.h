@@ -6,6 +6,8 @@
 //  Copyright (c) 2016 tosyama. All rights reserved.
 //
 
+#define MAX_LEGAL_SASHITE	593
+
 enum SashiteType {
     SASHITE_EMP,
     SASHITE_IDOU,

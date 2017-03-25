@@ -10,7 +10,7 @@
 enum Koma {
     EMP = 0, //空 1
     FU = 1, //歩 2
-    KY = 2, //香車 4
+    KY = 2, //香車 4
     KE = 3, //桂馬 8
     GI = 4, //銀 16
     KI = 5, //金 32
@@ -20,7 +20,7 @@ enum Koma {
     KOMATYPE1 = 0x7, //成りを含まない駒種の判別
     NARI = 8, //成り
     NFU = NARI + FU, //と9 512
-    NKY = NARI + KY, //成香10 1024
+    NKY = NARI + KY, //成香10 1024
     NKE = NARI + KE, //成桂11 2048
     NGI = NARI + GI, //成銀12 4096
     UMA = NARI + KA, //馬14 16384
@@ -65,6 +65,8 @@ typedef struct {
 
 #define INNER_X(x)   (BanX-(x))
 #define INNER_Y(y)   ((y)-1)
+#define STD_X(x)	(BanX-(x))
+#define STD_Y(y)	((y)+1)
 
 void resetShogiBan(ShogiKykumen *shogi);
 void printKyokumen(FILE *f, ShogiKykumen *shogi);
