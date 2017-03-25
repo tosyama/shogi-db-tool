@@ -909,7 +909,6 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 				default: setBitBB(escapeAreaB, x, y); break;
 			}
 		}
-	printBB(stdout, escapeAreaB);
 }
 
 bool checkUchiFUZume(
