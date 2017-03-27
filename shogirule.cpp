@@ -153,6 +153,8 @@ inline int isKoma(Koma k, int koma_flag, int uwate)
 #define LNanamePin	4
 #define RNanamePin	8
 
+int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
+		Koma (*shogiBan)[BanX], int ou_x, int ou_y);
 Sashite *createSashiteFU(Sashite *te, 
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
@@ -199,11 +201,10 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	int ou_x = shogi->ou_x;
 	int ou_y = shogi->ou_y;
 	int oute_num = 0;
-	BitBoard9x9 outePosKikiB;	 // 王手ゴマの位置を記録
+	BitBoard9x9 outePosKikiB = { 0 };	 // 王手ゴマの位置を記録
 	int kabegomaInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
 	int ukabegomaInfo[BanY][BanX] = { 0 };	 // pinされている駒の向きを記録
 	
-	clearBB(&outePosKikiB);
 	{
 		if (ou_y >= 2) {
 			if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
@@ -489,6 +490,41 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	if (komaDai[0][HI])
 		cs = createSashiteUchi(cs, HI, shogiBan);
 	*n = cs-s;
+}
+
+inline int existsOuteGomaInLine(
+		BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
+		Koma (*shogiBan)[BanX], int x, int y,
+		int incx, int incy, int maxloop,
+		int direct, int indirect)
+{
+	if (maxloop==0) return 0;
+	x+=incx; y+=incy;
+	Koma k=shogiBan[y][x];
+	if (k != EMP) {
+		if (k & UWATE) {
+		}
+	}
+	for (int i=1; i<maxloop; i++) {
+		x+=incx; y+=incy;
+	}
+	return 0;
+}
+
+int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
+		Koma (*shogiBan)[BanX], int ou_x, int ou_y)
+{
+	int oute_num = 0;
+	if (ou_y >= 2) {
+		if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
+			setBitBB(outePosKikiB, ou_x-1, ou_y-2);
+			oute_num++;
+		} else if (ou_x <= (BanX-2) && shogiBan[ou_y-2][ou_x+1]==UKE) {
+			setBitBB(outePosKikiB, ou_x+1, ou_y-2);
+			oute_num++;
+		}
+	}
+	return oute_num;
 }
 
 inline Sashite *createSashiteRange(
