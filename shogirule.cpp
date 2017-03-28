@@ -504,11 +504,54 @@ inline int existsOuteGomaInLine(
 	if (k != EMP) {
 		if (k & UWATE) {
 			if (isKoma(k, direct ,1)){
+				setBitBB(outePosKikiB,x,y);
+				return 1;
+			}
+			return 0;
+		}
+		// check pinned.
+		int xx = x; int yy = y;
+		for (int j=1;j<maxloop;j++) {
+			xx+=incx; yy+=incy;
+			Koma kk=shogiBan[y][x];
+			if (kk != EMP) {
+				if (isKoma(k, indirect, 1)){
+					pinInfo[y][x] = pin;
+				}
+				return 0;
 			}
 		}
+		return 0;
 	}
+
+	BitBoard9x9 workBB = {0};
+	setBitBB(&workBB, x, y);
 	for (int i=1; i<maxloop; i++) {
 		x+=incx; y+=incy;
+		k=shogiBan[y][x];
+		setBitBB(&workBB, x, y);
+		if (k != EMP) {
+			if (k & UWATE) {
+				if (isKoma(k, indirect ,1)){
+					setBitsBB(outePosKikiB,&workBB);
+					return 1;
+				}
+				return 0;
+			}
+			// check pinned.
+			int xx = x; int yy = y;
+			for (int j=i+1;j<maxloop;j++) {
+				xx+=incx; yy+=incy;
+				Koma kk=shogiBan[y][x];
+				if (kk != EMP) {
+					if (isKoma(k, indirect, 1)){
+						pinInfo[y][x] = pin;
+					}
+					return 0;
+				}
+			}
+			return 0;
+		}
 	}
 	return 0;
 }
