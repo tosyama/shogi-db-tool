@@ -496,13 +496,15 @@ inline int existsOuteGomaInLine(
 		BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 		Koma (*shogiBan)[BanX], int x, int y,
 		int incx, int incy, int maxloop,
-		int direct, int indirect)
+		int direct, int indirect, int pin)
 {
 	if (maxloop==0) return 0;
 	x+=incx; y+=incy;
 	Koma k=shogiBan[y][x];
 	if (k != EMP) {
 		if (k & UWATE) {
+			if (isKoma(k, direct ,1)){
+			}
 		}
 	}
 	for (int i=1; i<maxloop; i++) {
@@ -524,6 +526,7 @@ int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 			oute_num++;
 		}
 	}
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, -1, -1, min(ou_x,ou_y), F_NAMAE_GOMA, F_KA_UMA, LNanamePin); 
 	return oute_num;
 }
 
