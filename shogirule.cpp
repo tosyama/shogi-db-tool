@@ -499,40 +499,16 @@ inline int existsOuteGomaInLine(
 		int direct, int indirect, int pin)
 {
 	if (maxloop==0) return 0;
-	x+=incx; y+=incy;
-	Koma k=shogiBan[y][x];
-	if (k != EMP) {
-		if (k & UWATE) {
-			if (isKoma(k, direct ,1)){
-				setBitBB(outePosKikiB,x,y);
-				return 1;
-			}
-			return 0;
-		}
-		// check pinned.
-		int xx = x; int yy = y;
-		for (int j=1;j<maxloop;j++) {
-			xx+=incx; yy+=incy;
-			Koma kk=shogiBan[y][x];
-			if (kk != EMP) {
-				if (isKoma(k, indirect, 1)){
-					pinInfo[y][x] = pin;
-				}
-				return 0;
-			}
-		}
-		return 0;
-	}
 
 	BitBoard9x9 workBB = {0};
 	setBitBB(&workBB, x, y);
-	for (int i=1; i<maxloop; i++) {
+	for (int i=0; i<maxloop; i++) {
 		x+=incx; y+=incy;
-		k=shogiBan[y][x];
+		Koma k = shogiBan[y][x];
 		setBitBB(&workBB, x, y);
 		if (k != EMP) {
 			if (k & UWATE) {
-				if (isKoma(k, indirect ,1)){
+				if (isKoma(k, i==0 ? direct : indirect, 1)){
 					setBitsBB(outePosKikiB,&workBB);
 					return 1;
 				}
@@ -570,6 +546,9 @@ int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 		}
 	}
 	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, -1, -1, min(ou_x,ou_y), F_NAMAE_GOMA, F_KA_UMA, LNanamePin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 1, 1, min(BanX-1-ou_x,BanY-1-ou_y), F_NANAME_GOMA, F_KA_UMA, LNanamePin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 0, -1, ou_y, F_MAE_GOMA, F_KY_HI_RYU, VertPin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 0, 1, BanY-1-ou_y, F_YOKO_GOMA, F_HI_RYU, VertPin); 
 	return oute_num;
 }
 
