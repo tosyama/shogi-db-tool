@@ -51,12 +51,12 @@ int main(int argc, const char * argv[]) {
 			if (s[j].type == SASHITE_IDOU) {
 				int x = s[j].idou.from_x;
 				int y = s[j].idou.from_y;
-				// fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
-				// 		j+1,
-				// 		komaStr[shogi.shogiBan[y][x]],
-				// 		STD_X(x), STD_Y(y),
-				// 		STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
-				// 		s[j].idou.nari?"+":"");
+				fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
+						j+1,
+						komaStr[shogi.shogiBan[y][x]],
+						STD_X(x), STD_Y(y),
+						STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
+						s[j].idou.nari?"+":"");
 			} else if (s[j].type == SASHITE_UCHI)
 				fprintf(logf, "%.2d %s>(%d,%d)\n",
 						j+1,

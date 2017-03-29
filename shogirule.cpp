@@ -205,92 +205,93 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	int kabegomaInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
 	int ukabegomaInfo[BanY][BanX] = { 0 };	 // pinされている駒の向きを記録
 	
-	{
-		if (ou_y >= 2) {
-			if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
-				setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
-				oute_num++;
-				printf("左桂王手\n");
-			} else if (ou_x <= 7 && shogiBan[ou_y-2][ou_x+1]==UKE) {
-				setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
-				oute_num++;
-				printf("右桂王手\n");
-			}
-		}
+	oute_num = checkOute(&outePosKikiB, kabegomaInfo, shogiBan, ou_x, ou_y); 
+	//{
+	//	if (ou_y >= 2) {
+	//		if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
+	//			setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
+	//			oute_num++;
+	//			printf("左桂王手\n");
+	//		} else if (ou_x <= 7 && shogiBan[ou_y-2][ou_x+1]==UKE) {
+	//			setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
+	//			oute_num++;
+	//			printf("右桂王手\n");
+	//		}
+	//	}
 
-		// {検出移動幅, ループ数, 直接王手駒, 間接王手駒, Pinタイプ}
-		int  scanInf[8][5] = {
-			{BanX*-1-1, min(ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, LNanamePin},
-			{BanX*-1,ou_y,F_MAE_GOMA,F_KY_HI_RYU, VertPin},
-			{BanX*-1+1, min(BanX-1-ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, RNanamePin},
-			{-1,ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
-			{1,BanX-1-ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
-			{BanX*1-1,min(ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, RNanamePin},
-			{BanX*1,BanY-1-ou_y,F_YOKO_GOMA,F_HI_RYU, VertPin},
-			{BanX*1+1,min(BanX-1-ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, LNanamePin}
-		};
-		
-		Koma *ou_pos = &shogiBan[ou_y][ou_x];
-		
-		for(int i=0; i<8; i++) {
-			if (scanInf[i][1]>0) {
-				int inc = scanInf[i][0];
-				Koma *k = ou_pos + inc;
-				BitBoard9x9 workKikiB;	  // 王手ゴマの位置を記録
-				if(*k == EMP) { // 空 間接王手の検索
-					Koma *end_pos = ou_pos + (inc*(scanInf[i][1]+1));
-					Koma koma_flag = (Koma)scanInf[i][3];
-					clearBB(&workKikiB);
-					setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
-					for(k+=inc;k!=end_pos; k+=inc) {
-						setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
-						if (*k != EMP) {
-							if (*k & UWATE) { // 相手駒
-								if(isKoma(*k, koma_flag, 1)) {
-									printf("間接王手%d\n", i);
-									setBitsBB(&outePosKikiB, &workKikiB);
-									oute_num++;
-								}
-							} else { // 味方駒 壁駒になってないか相手駒を追加検索
-								for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
-									if (*kk != EMP) {
-										if (isKoma(*kk, koma_flag, 1)) {
-											printf("壁駒%d\n", i);
-											int n = (int)(k-&shogiBan[0][0]);
-											*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
-										}
-										break;
-									}
-								}
-							}
-							break;
-						}
-					}
-				} else if (*k & UWATE) { // 相手駒 直接王手の判別
-					if(isKoma(*k, scanInf[i][2], 1)) {
-						setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
-						oute_num++;
-						printf("直接王手%d\n", i);
-					}
-				} else { //味方 壁駒になってないか相手駒を追加検索
-					Koma *end_pos = ou_pos + scanInf[i][1];
-					Koma koma_flag = (Koma)scanInf[i][3];
-					
-					for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
-						if (*kk != EMP) {
-							if (isKoma(*kk, koma_flag, 1)) {
-								printf("壁駒%d\n", i);
-								int n = (int)(k-&shogiBan[0][0]);
-								*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
+	//	// {検出移動幅, ループ数, 直接王手駒, 間接王手駒, Pinタイプ}
+	//	int  scanInf[8][5] = {
+	//		{BanX*-1-1, min(ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, LNanamePin},
+	//		{BanX*-1,ou_y,F_MAE_GOMA,F_KY_HI_RYU, VertPin},
+	//		{BanX*-1+1, min(BanX-1-ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, RNanamePin},
+	//		{-1,ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
+	//		{1,BanX-1-ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
+	//		{BanX*1-1,min(ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, RNanamePin},
+	//		{BanX*1,BanY-1-ou_y,F_YOKO_GOMA,F_HI_RYU, VertPin},
+	//		{BanX*1+1,min(BanX-1-ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, LNanamePin}
+	//	};
+	//	
+	//	Koma *ou_pos = &shogiBan[ou_y][ou_x];
+	//	
+	//	for(int i=0; i<8; i++) {
+	//		if (scanInf[i][1]>0) {
+	//			int inc = scanInf[i][0];
+	//			Koma *k = ou_pos + inc;
+	//			BitBoard9x9 workKikiB;	  // 王手ゴマの位置を記録
+	//			if(*k == EMP) { // 空 間接王手の検索
+	//				Koma *end_pos = ou_pos + (inc*(scanInf[i][1]+1));
+	//				Koma koma_flag = (Koma)scanInf[i][3];
+	//				clearBB(&workKikiB);
+	//				setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
+	//				for(k+=inc;k!=end_pos; k+=inc) {
+	//					setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
+	//					if (*k != EMP) {
+	//						if (*k & UWATE) { // 相手駒
+	//							if(isKoma(*k, koma_flag, 1)) {
+	//								printf("間接王手%d\n", i);
+	//								setBitsBB(&outePosKikiB, &workKikiB);
+	//								oute_num++;
+	//							}
+	//						} else { // 味方駒 壁駒になってないか相手駒を追加検索
+	//							for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
+	//								if (*kk != EMP) {
+	//									if (isKoma(*kk, koma_flag, 1)) {
+	//										printf("壁駒%d\n", i);
+	//										int n = (int)(k-&shogiBan[0][0]);
+	//										*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
+	//									}
+	//									break;
+	//								}
+	//							}
+	//						}
+	//						break;
+	//					}
+	//				}
+	//			} else if (*k & UWATE) { // 相手駒 直接王手の判別
+	//				if(isKoma(*k, scanInf[i][2], 1)) {
+	//					setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
+	//					oute_num++;
+	//					printf("直接王手%d\n", i);
+	//				}
+	//			} else { //味方 壁駒になってないか相手駒を追加検索
+	//				Koma *end_pos = ou_pos + scanInf[i][1];
+	//				Koma koma_flag = (Koma)scanInf[i][3];
+	//				
+	//				for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
+	//					if (*kk != EMP) {
+	//						if (isKoma(*kk, koma_flag, 1)) {
+	//							printf("壁駒%d\n", i);
+	//							int n = (int)(k-&shogiBan[0][0]);
+	//							*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
+	//						}
+	//						break;
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
 
-	}
+	//}
 	printf("outen: %d\n", oute_num);
 	/*for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
@@ -549,6 +550,10 @@ int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 1, 1, min(BanX-1-ou_x,BanY-1-ou_y), F_NANAME_GOMA, F_KA_UMA, LNanamePin); 
 	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 0, -1, ou_y, F_MAE_GOMA, F_KY_HI_RYU, VertPin); 
 	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 0, 1, BanY-1-ou_y, F_YOKO_GOMA, F_HI_RYU, VertPin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 1, -1, min(BanX-1-ou_x,ou_y), F_NAMAE_GOMA, F_KA_UMA, RNanamePin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, -1, 1, min(ou_x,BanY-1-ou_y), F_NANAME_GOMA, F_KA_UMA, RNanamePin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, -1, 0, ou_x, F_YOKO_GOMA, F_HI_RYU, HorizPin); 
+	oute_num += existsOuteGomaInLine(outePosKikiB, pinInfo, shogiBan, ou_x, ou_y, 1, 0, BanX-1-ou_x, F_YOKO_GOMA, F_HI_RYU, HorizPin); 
 	return oute_num;
 }
 
