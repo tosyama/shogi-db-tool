@@ -108,6 +108,8 @@ const uint32_t KI_pttn = 0x00080a07;
 const uint32_t UMA_pttn = 0x00080a02;
 const uint32_t RYU_pttn = 0x00140005;
 const uint32_t OU_pttn = 0x001c0a07;
+const uint32_t UGI_pttn = 0x001c0005;
+const uint32_t UKI_pttn = 0x001c0a02;
 
 inline void setBitsBB(BitBoard9x9 *b, int x, int y, uint32_t pattern)
 {
@@ -208,92 +210,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	int ukabegomaInfo[BanY][BanX] = { 0 };	 // pinされている駒の向きを記録
 	
 	oute_num = checkOute(&outePosKikiB, kabegomaInfo, shogiBan, ou_x, ou_y); 
-	//{
-	//	if (ou_y >= 2) {
-	//		if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
-	//			setBitBB(&outePosKikiB, ou_x-1, ou_y-2);
-	//			oute_num++;
-	//			printf("左桂王手\n");
-	//		} else if (ou_x <= 7 && shogiBan[ou_y-2][ou_x+1]==UKE) {
-	//			setBitBB(&outePosKikiB, ou_x+1, ou_y-2);
-	//			oute_num++;
-	//			printf("右桂王手\n");
-	//		}
-	//	}
-
-	//	// {検出移動幅, ループ数, 直接王手駒, 間接王手駒, Pinタイプ}
-	//	int  scanInf[8][5] = {
-	//		{BanX*-1-1, min(ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, LNanamePin},
-	//		{BanX*-1,ou_y,F_MAE_GOMA,F_KY_HI_RYU, VertPin},
-	//		{BanX*-1+1, min(BanX-1-ou_x,ou_y),F_NAMAE_GOMA,F_KA_UMA, RNanamePin},
-	//		{-1,ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
-	//		{1,BanX-1-ou_x,F_YOKO_GOMA,F_HI_RYU, HorizPin},
-	//		{BanX*1-1,min(ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, RNanamePin},
-	//		{BanX*1,BanY-1-ou_y,F_YOKO_GOMA,F_HI_RYU, VertPin},
-	//		{BanX*1+1,min(BanX-1-ou_x,BanY-1-ou_y),F_NANAME_GOMA,F_KA_UMA, LNanamePin}
-	//	};
-	//	
-	//	Koma *ou_pos = &shogiBan[ou_y][ou_x];
-	//	
-	//	for(int i=0; i<8; i++) {
-	//		if (scanInf[i][1]>0) {
-	//			int inc = scanInf[i][0];
-	//			Koma *k = ou_pos + inc;
-	//			BitBoard9x9 workKikiB;	  // 王手ゴマの位置を記録
-	//			if(*k == EMP) { // 空 間接王手の検索
-	//				Koma *end_pos = ou_pos + (inc*(scanInf[i][1]+1));
-	//				Koma koma_flag = (Koma)scanInf[i][3];
-	//				clearBB(&workKikiB);
-	//				setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
-	//				for(k+=inc;k!=end_pos; k+=inc) {
-	//					setBitBB(&workKikiB,(int)(k-&shogiBan[0][0]));
-	//					if (*k != EMP) {
-	//						if (*k & UWATE) { // 相手駒
-	//							if(isKoma(*k, koma_flag, 1)) {
-	//								printf("間接王手%d\n", i);
-	//								setBitsBB(&outePosKikiB, &workKikiB);
-	//								oute_num++;
-	//							}
-	//						} else { // 味方駒 壁駒になってないか相手駒を追加検索
-	//							for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
-	//								if (*kk != EMP) {
-	//									if (isKoma(*kk, koma_flag, 1)) {
-	//										printf("壁駒%d\n", i);
-	//										int n = (int)(k-&shogiBan[0][0]);
-	//										*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
-	//									}
-	//									break;
-	//								}
-	//							}
-	//						}
-	//						break;
-	//					}
-	//				}
-	//			} else if (*k & UWATE) { // 相手駒 直接王手の判別
-	//				if(isKoma(*k, scanInf[i][2], 1)) {
-	//					setBitBB(&outePosKikiB, (int)(k-&shogiBan[0][0]));
-	//					oute_num++;
-	//					printf("直接王手%d\n", i);
-	//				}
-	//			} else { //味方 壁駒になってないか相手駒を追加検索
-	//				Koma *end_pos = ou_pos + scanInf[i][1];
-	//				Koma koma_flag = (Koma)scanInf[i][3];
-	//				
-	//				for (Koma *kk=k+inc; kk!=end_pos; kk+=inc) {
-	//					if (*kk != EMP) {
-	//						if (isKoma(*kk, koma_flag, 1)) {
-	//							printf("壁駒%d\n", i);
-	//							int n = (int)(k-&shogiBan[0][0]);
-	//							*(&kabegomaInfo[0][0]+n) = scanInf[i][4];
-	//						}
-	//						break;
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//}
 	printf("outen: %d\n", oute_num);
 	/*for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
@@ -376,10 +292,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					break;
 
 				case UGI: UGIBR;
-					{
-						const uint32_t UGI_pttn = 0x001c0005;
-						setBitsBB(&uwateKikiB, x, y, UGI_pttn);
-					}
+					setBitsBB(&uwateKikiB, x, y, UGI_pttn);
 					break;
 				
 				case UKI:
@@ -387,17 +300,11 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				case UNKY:
 				case UNKE:
 				case UNGI: UKIBR;
-					{
-						const uint32_t UKI_pttn = 0x001c0a02;
-						setBitsBB(&uwateKikiB, x, y, UKI_pttn);
-					}
+					setBitsBB(&uwateKikiB, x, y, UKI_pttn);
 					break;
 
 				case UUMA: UUMABR;
-					{
-						const uint32_t UMA_pttn = 0x00080a02;
-						setBitsBB(&uwateKikiB, x, y, UMA_pttn);
-					}
+					setBitsBB(&uwateKikiB, x, y, UMA_pttn);
 
 				case UKA: UKABR;
 					{
@@ -420,10 +327,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				 
 					break;
 				case URYU: URYUBR;
-					{
-						const uint32_t RYU_pttn = 0x00140005;
-						setBitsBB(&uwateKikiB, x, y, RYU_pttn);
-					}
+					setBitsBB(&uwateKikiB, x, y, RYU_pttn);
 
 			   case UHI: UHIBR;
 					{
@@ -447,10 +351,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					break;			  
 
 				case UOU: UOUBR;
-					{
-						const uint32_t OU_pttn = 0x001c0a07;
-						setBitsBB(&uwateKikiB, x, y, OU_pttn);
-					}
+					setBitsBB(&uwateKikiB, x, y, OU_pttn);
 					break;
 
 				default:
@@ -468,8 +369,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 		cs=createSashiteOU(cs, shogiBan, ou_x, ou_y, &noUwateKiki);
 	}
 							
-	// 予定: 効きから打ちふ詰めも検出
-	//printBB(stdout, &tebanKikiB);    
 //	printBB(stdout, &uwateKikiB);	 
    /* for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
@@ -939,25 +838,43 @@ inline bool existsKikiGomaInLine(
 	return false;
 }
 
-inline void setKikiLine(BitBoard9x9 *kikiB,
+inline void setKikiLine(
+		BitBoard9x9 *kikiB, int (*uPinInfo)[BanX],
 		Koma (*shogiBan)[BanX], int x, int y,
-		int incx, int incy, int maxloop)
+		int incx, int incy, int maxloop,
+		int pin)
 {
 	for (int i=0; i<maxloop; i++) {
 		x += incx; y+= incy;
 		setBitBB(kikiB, x, y);
-		if (shogiBan[y][x] != EMP) return;
+		Koma k = shogiBan[y][x];
+		if (k != EMP) {
+			if (k & UWATE) { 
+				int px = x, py = y;
+				for (int j=i+1; j<maxloop; j++) {
+					x += incx; y+= incy;
+					k = shogiBan[y][x];
+					if (k != EMP) {
+						if (k == UOU) uPinInfo[py][px] = pin;
+						return;
+					}
+				}
+			}
+			return;
+		}
 	}
 }
 
-inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
+inline void createEscapeArea(
+	BitBoard9x9 *escapeAreaB, int (*uPinInfo)[BanX],
+	Koma (*shogiBan)[BanX])
 {
 	for (int y=0; y<BanY; y++)
 		for (int x=0; x<BanX; x++) {
 			switch(shogiBan[y][x]) {
 				case EMP: break;
 				case FU: setBitBB(escapeAreaB, x, y-1); break;
-				case KY: setKikiLine(escapeAreaB, shogiBan, x, y, 0, -1, y); break;
+				case KY: setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 0, -1, y, VertPin); break;
 				case KE:
 					if (x>=1) setBitBB(escapeAreaB, x-1, y-2);
 					if (x<=BanX-2) setBitBB(escapeAreaB, x+1, y-2);
@@ -966,16 +883,16 @@ inline void createEscapeArea(BitBoard9x9 *escapeAreaB, Koma (*shogiBan)[BanX])
 				case KI: case NFU: case NKY: case NKE: case NGI:
 						 setBitsBB(escapeAreaB, x, y, KI_pttn); break;
 				case UMA: setBitsBB(escapeAreaB, x, y, UMA_pttn);
-				case KA: setKikiLine(escapeAreaB, shogiBan, x, y, -1, -1, min(x,y));
-						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, 1, min(BanX-1-x, BanY-1-y));
-						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, -1, min(BanX-1-x, y));
-						 setKikiLine(escapeAreaB, shogiBan, x, y, -1, 1, min(x, BanY-1-y));
+				case KA: setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, -1, -1, min(x,y), LNanamePin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 1, 1, min(BanX-1-x, BanY-1-y), LNanamePin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 1, -1, min(BanX-1-x, y), RNanamePin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, -1, 1, min(x, BanY-1-y), RNanamePin);
 						 break;
 				case RYU: setBitsBB(escapeAreaB, x, y, RYU_pttn);
-				case HI: setKikiLine(escapeAreaB, shogiBan, x, y, 0, -1, y);
-						 setKikiLine(escapeAreaB, shogiBan, x, y, 0, 1, BanY-1-y);
-						 setKikiLine(escapeAreaB, shogiBan, x, y, -1, 0, x);
-						 setKikiLine(escapeAreaB, shogiBan, x, y, 1, 0, BanX-1-x);
+				case HI: setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 0, -1, y, VertPin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 0, 1, BanY-1-y, VertPin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, -1, 0, x, HorizPin);
+						 setKikiLine(escapeAreaB, uPinInfo, shogiBan, x, y, 1, 0, BanX-1-x, HorizPin);
 						 break;
 
 				case OU: setBitsBB(escapeAreaB, x, y, OU_pttn); break;
@@ -988,6 +905,20 @@ bool checkUchiFUZume(
 		Koma (*shogiBan)[BanX], int x, int y,
 		int (*ukabegomaInfo)[BanX])
 {
+	int uPinInfo[BanY][BanX] = {0};
+
+	// 王の逃げ場チェック
+	BitBoard9x9 escapeAreaB={0};
+	BitBoard9x9 ou_range={0};
+	assert(shogiBan[y][x]==EMP);
+	shogiBan[y][x]=FU;
+	createEscapeArea(&escapeAreaB, uPinInfo, shogiBan);
+	shogiBan[y][x]=EMP;
+	setBitsBB(&ou_range, x, y-1, OU_pttn);
+	setAndBitsBB(&escapeAreaB, &ou_range);
+	if (escapeAreaB.topmid != ou_range.topmid || escapeAreaB.bottom != ou_range.bottom)
+		return false; // 逃げ場あり
+
 	// 王手の判定
 	if (shogiBan[y-1][x] != UOU) return false;
 	// 打った歩が取られるか？
@@ -1007,17 +938,6 @@ bool checkUchiFUZume(
 				return false;
 		}
 	}
-	// 王の逃げ場チェック
-	BitBoard9x9 escapeAreaB={0};
-	BitBoard9x9 ou_range={0};
-	assert(shogiBan[y][x]==EMP);
-	shogiBan[y][x]=FU;
-	createEscapeArea(&escapeAreaB,shogiBan);
-	shogiBan[y][x]=EMP;
-	setBitsBB(&ou_range, x, y-1, OU_pttn);
-	setAndBitsBB(&escapeAreaB, &ou_range);
-	if (escapeAreaB.topmid == ou_range.topmid && escapeAreaB.bottom == ou_range.bottom)
-		return true; // 逃げ場なし
 
 	return false;
 }
