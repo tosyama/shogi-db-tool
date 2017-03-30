@@ -186,9 +186,11 @@ Sashite *createSashiteOU(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		BitBoard9x9 *noUwateKikiB);
 Sashite *createSashiteUchi(Sashite *te, Koma k,
-		Koma (*shogiBan)[BanX], int uchiLimit=0);
+		Koma (*shogiBan)[BanX],
+		int oute_num, BitBoard9x9 *outePosKikiB, int uchiLimit=0);
 Sashite *createSashiteUchiFU(Sashite *te, Koma (*shogiBan)[BanX],
-		unsigned int usedLine, int (*ukabegomaInfo)[BanX]);
+		unsigned int usedLine, int (*ukabegomaInfo)[BanX],
+		int oute_num, BitBoard9x9 *outePosKikiB);
 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
@@ -477,19 +479,19 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	}*/
 	
 	if (komaDai[0][FU])
-		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, ukabegomaInfo);
+		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, ukabegomaInfo, oute_num, &outePosKikiB);
 	if (komaDai[0][KY])
-		cs = createSashiteUchi(cs, KY, shogiBan, 1);
+		cs = createSashiteUchi(cs, KY, shogiBan, oute_num, &outePosKikiB, 1);
 	if (komaDai[0][KE])
-		cs = createSashiteUchi(cs, KE, shogiBan, 2);
+		cs = createSashiteUchi(cs, KE, shogiBan, oute_num, &outePosKikiB, 2);
 	if (komaDai[0][GI])
-		cs = createSashiteUchi(cs, GI, shogiBan);
+		cs = createSashiteUchi(cs, GI, shogiBan, oute_num, &outePosKikiB);
 	if (komaDai[0][KI])
-		cs = createSashiteUchi(cs, KI, shogiBan);
+		cs = createSashiteUchi(cs, KI, shogiBan, oute_num, &outePosKikiB);
 	if (komaDai[0][KA])
-		cs = createSashiteUchi(cs, KA, shogiBan);
+		cs = createSashiteUchi(cs, KA, shogiBan, oute_num, &outePosKikiB);
 	if (komaDai[0][HI])
-		cs = createSashiteUchi(cs, HI, shogiBan);
+		cs = createSashiteUchi(cs, HI, shogiBan, oute_num, &outePosKikiB);
 	*n = cs-s;
 }
 
@@ -894,11 +896,16 @@ Sashite *createSashiteOU(Sashite *te,
 }
 
 Sashite *createSashiteUchi(Sashite *te, Koma k,
-		Koma (*shogiBan)[BanX], int uchiLimit)
+		Koma (*shogiBan)[BanX], 
+		int oute_num, BitBoard9x9 *outePosKikiB,
+		int uchiLimit)
 {
+	if (oute_num >= 2) return te;
 	for (int y=uchiLimit; y<BanY; y++)
 		for (int x=0; x<BanX; x++) {
 			if (shogiBan[y][x]==EMP) {
+				if (oute_num==1 && !getBitBB(outePosKikiB,x,y))
+					continue;
 				te->type = SASHITE_UCHI;
 				te->uchi.uwate = 0;
 				te->uchi.to_y = y;
@@ -1017,12 +1024,16 @@ bool checkUchiFUZume(
 
 Sashite *createSashiteUchiFU(Sashite *te, 
 		Koma (*shogiBan)[BanX], unsigned int usedLine,
-		int (*ukabegomaInfo)[BanX])
+		int (*ukabegomaInfo)[BanX],
+		int oute_num, BitBoard9x9 *outePosKikiB)
 {
+	if (oute_num >= 2) return te;
 	for (int x=0; x<BanX; x++) {
 		if(1u &(usedLine >> x)) continue;
 		for (int y=1; y<BanY; y++) {
 			if (shogiBan[y][x]==EMP) {
+				if (oute_num==1 && !getBitBB(outePosKikiB,x,y))
+					continue;
 				if (!checkUchiFUZume(shogiBan, x, y, ukabegomaInfo)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
