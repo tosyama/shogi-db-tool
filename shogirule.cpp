@@ -160,7 +160,7 @@ int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 Sashite *createSashiteFU(Sashite *te, 
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
-Sashite *createSashiteKY(Sashite *te, int (*ukabegomaInfo)[BanX],
+Sashite *createSashiteKY(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool nari);
 Sashite *createSashiteKE(Sashite *te, 
@@ -175,13 +175,13 @@ Sashite *createSashiteKI(Sashite *te,
 Sashite *createSashiteUMA(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
-Sashite *createSashiteKA( Sashite *te, int (*ukabegomaInfo)[BanX],
+Sashite *createSashiteKA(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool nari);
 Sashite *createSashiteRYU(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB);
-Sashite *createSashiteHI(Sashite *te, int (*ukabegomaInfo)[BanX],
+Sashite *createSashiteHI(Sashite *te,
 		Koma (*shogiBan)[BanX], int x, int y,
 		int pin, int oute_num, BitBoard9x9 *outePosKikiB, bool nari);
 Sashite *createSashiteOU(Sashite *te, 
@@ -191,9 +191,7 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 		Koma (*shogiBan)[BanX],
 		int oute_num, BitBoard9x9 *outePosKikiB, int uchiLimit=0);
 Sashite *createSashiteUchiFU(Sashite *te, Koma (*shogiBan)[BanX],
-		unsigned int usedLine, int (*ukabegomaInfo)[BanX],
-		int oute_num, BitBoard9x9 *outePosKikiB);
-
+		unsigned int usedLine, int oute_num, BitBoard9x9 *outePosKikiB); 
 // 手の生成
 void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 {
@@ -207,7 +205,6 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	int oute_num = 0;
 	BitBoard9x9 outePosKikiB = { 0 };	 // 王手ゴマの位置を記録
 	int kabegomaInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
-	int ukabegomaInfo[BanY][BanX] = { 0 };	 // pinされている駒の向きを記録
 	
 	oute_num = checkOute(&outePosKikiB, kabegomaInfo, shogiBan, ou_x, ou_y); 
 	printf("outen: %d\n", oute_num);
@@ -235,8 +232,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				case KY: KYBR;
-					cs=createSashiteKY(cs, ukabegomaInfo,
-							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
+					cs=createSashiteKY(cs, shogiBan, x, y,
+							kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
 				case KE: KEBR;
 					cs=createSashiteKE(cs, shogiBan, x, y,
@@ -259,8 +256,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					cs=createSashiteUMA(cs, shogiBan, x, y,
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 				case KA: KABR; // 馬と共通。馬のときは成りなし
-					cs=createSashiteKA(cs, ukabegomaInfo,
-							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==UMA);
+					cs=createSashiteKA(cs, shogiBan, x, y,
+							kabegomaInfo[y][x], oute_num, &outePosKikiB, k==UMA);
 					break;
 				
 				case RYU: RYUBR; // 斜め4つだけ
@@ -268,8 +265,7 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 							kabegomaInfo[y][x], oute_num, &outePosKikiB);
 
 				case HI: HIBR;  // 竜と共通。竜のときは成りなし
-					cs=createSashiteHI(cs, ukabegomaInfo,
-							shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
+					cs=createSashiteHI(cs, shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
 				
 				// 上手の効きと位置の記録
@@ -369,16 +365,8 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 		cs=createSashiteOU(cs, shogiBan, ou_x, ou_y, &noUwateKiki);
 	}
 							
-//	printBB(stdout, &uwateKikiB);	 
-   /* for (int y=0; y<BanY; y++) {
-		for (int x=0; x<BanX; x++) {
-			printf("%d", ukabegomaInfo[y][x]);
-		}
-		printf("\n");
-	}*/
-	
 	if (komaDai[0][FU])
-		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, ukabegomaInfo, oute_num, &outePosKikiB);
+		cs = createSashiteUchiFU(cs, shogiBan, usedLineFU, oute_num, &outePosKikiB);
 	if (komaDai[0][KY])
 		cs = createSashiteUchi(cs, KY, shogiBan, oute_num, &outePosKikiB, 1);
 	if (komaDai[0][KE])
@@ -507,17 +495,12 @@ inline Sashite *createSashiteRange(
 	return te;
 }
 
-inline Sashite *createSashiteTobiGoma(
-	Sashite *te,
-	int (*ukabegomaInfo)[BanX],
-	Koma (*shogiBan)[BanX],
-	int x, int y,
+inline Sashite *createSashiteTobiGoma( Sashite *te,
+	Koma (*shogiBan)[BanX], int x, int y,
 	int pin,
-	int oute_num,
-	BitBoard9x9 *outePosKikiB,
+	int oute_num, BitBoard9x9 *outePosKikiB,
 	bool nari,
-	int (*scanInf)[5],
-	int scan_num,
+	int (*scanInf)[5], int scan_num,
 	int nari_limit = -1)
 {
 	// {x移動,y移動,終了条件x,終了条件y,有効pin}
@@ -537,20 +520,10 @@ inline Sashite *createSashiteTobiGoma(
 				to_x+=inc_x, to_y+=inc_y) {
 			Koma to_k = shogiBan[to_y][to_x];
 
-			if (to_k != EMP)
-				if (to_k & UWATE) {
-					stoploop = true;
-					// check to_k is pinned.
-					int xx=to_x+inc_x;
-					int yy=to_y+inc_y;
-					for (; xx!=end_x&&yy!=end_y; xx+=inc_x,yy+=inc_y) {
-						if (shogiBan[yy][xx] != EMP) {
-							if (shogiBan[yy][xx]==UOU)
-								ukabegomaInfo[to_y][to_x]=scanInf[r][4];
-							break;
-						}
-					}
-				} else break; // exit loop
+			if (to_k != EMP) {
+				if (to_k & UWATE) stoploop = true;
+				else break; // exit loop
+			}
 			
 			if (canmove) {
 				if (oute_num == 1 && !getBitBB(outePosKikiB, to_x, to_y)) continue; 
@@ -607,7 +580,6 @@ Sashite *createSashiteFU(
 
 Sashite *createSashiteKY(
 	Sashite *te,
-	int (*ukabegomaInfo)[BanX],
 	Koma (*shogiBan)[BanX],
 	int x, int y,
 	int pin,
@@ -618,7 +590,7 @@ Sashite *createSashiteKY(
 	// {x移動,y移動,終了条件x,終了条件y,有効pin}
 	int scanInf[1][5] = { {0,-1,-1,-1,VertPin}};
 	return createSashiteTobiGoma(
-		te, ukabegomaInfo,
+		te,
 		shogiBan, x, y, pin,
 		oute_num, outePosKikiB, nari,
 		scanInf, 1, 0);
@@ -715,7 +687,6 @@ Sashite *createSashiteUMA(
 
 Sashite *createSashiteKA(
 	Sashite *te,
-	int (*ukabegomaInfo)[BanX],
 	Koma (*shogiBan)[BanX],
 	int x, int y,
 	int pin,
@@ -729,7 +700,7 @@ Sashite *createSashiteKA(
 		{1,-1,BanX,-1,RNanamePin},{-1,1,-1,BanY,RNanamePin}
 	};
 	return createSashiteTobiGoma(
-		te, ukabegomaInfo,
+		te,
 		shogiBan, x, y, pin,
 		oute_num, outePosKikiB, nari,
 		scanInf, 4
@@ -762,7 +733,6 @@ Sashite *createSashiteRYU(
 
 Sashite *createSashiteHI(
 	Sashite *te,
-	int (*ukabegomaInfo)[BanX],
 	Koma (*shogiBan)[BanX],
 	int x, int y,
 	int pin,
@@ -776,7 +746,7 @@ Sashite *createSashiteHI(
 		{-1,0,-1,-1,HorizPin},{1,0,BanX,-1,HorizPin}
 	};
 	return createSashiteTobiGoma(
-		te, ukabegomaInfo,
+		te,
 		shogiBan, x, y, pin,
 		oute_num, outePosKikiB, nari,
 		scanInf, 4
@@ -901,9 +871,7 @@ inline void createEscapeArea(
 		}
 }
 
-bool checkUchiFUZume(
-		Koma (*shogiBan)[BanX], int x, int y,
-		int (*ukabegomaInfo)[BanX])
+bool checkUchiFUZume(Koma (*shogiBan)[BanX], int x, int y)
 {
 	int uPinInfo[BanY][BanX] = {0};
 
@@ -922,19 +890,19 @@ bool checkUchiFUZume(
 	// 王手の判定
 	if (shogiBan[y-1][x] != UOU) return false;
 	// 打った歩が取られるか？
-	if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,1,0,BanX-1-x,F_YOKO_GOMA,F_HI_RYU,HorizPin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,ukabegomaInfo)) return false;
-	if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,ukabegomaInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,0,x,F_YOKO_GOMA,F_HI_RYU,HorizPin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,0,BanX-1-x,F_YOKO_GOMA,F_HI_RYU,HorizPin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,-1,1,min(x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,RNanamePin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,1,1,min(BanX-1-x,BanY-1-y),F_NANAME_GOMA,F_KA_UMA,LNanamePin,uPinInfo)) return false;
+	if (existsKikiGomaInLine(shogiBan,x,y,0,1,BanY-1-y,F_YOKO_GOMA,F_HI_RYU,VertPin,uPinInfo)) return false;
 	if (y >= 2) {
 		if (x >= 1 && shogiBan[y-2][x-1]==UKE) {
-			if (ukabegomaInfo[y-2][x-1]==NoPin)
+			if (uPinInfo[y-2][x-1]==NoPin)
 				return false;
 		} else if (x <= 7 && shogiBan[y-2][x+1]==UKE) {
-			if (ukabegomaInfo[y-2][x+1]==NoPin)
+			if (uPinInfo[y-2][x+1]==NoPin)
 				return false;
 		}
 	}
@@ -944,7 +912,6 @@ bool checkUchiFUZume(
 
 Sashite *createSashiteUchiFU(Sashite *te, 
 		Koma (*shogiBan)[BanX], unsigned int usedLine,
-		int (*ukabegomaInfo)[BanX],
 		int oute_num, BitBoard9x9 *outePosKikiB)
 {
 	if (oute_num >= 2) return te;
@@ -954,7 +921,7 @@ Sashite *createSashiteUchiFU(Sashite *te,
 			if (shogiBan[y][x]==EMP) {
 				if (oute_num==1 && !getBitBB(outePosKikiB,x,y))
 					continue;
-				if (!checkUchiFUZume(shogiBan, x, y, ukabegomaInfo)) {
+				if (!checkUchiFUZume(shogiBan, x, y)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
 					te->uchi.to_y = y;
