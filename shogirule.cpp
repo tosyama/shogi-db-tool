@@ -143,9 +143,8 @@ void printBB(FILE *f, const BitBoard9x9 *b)
 }
 
 //駒の効きの判定
-inline int isKoma(Koma k, int koma_flag, int uwate)
+inline int isKoma(Koma k, int koma_flag)
 {
-	if (uwate && !(k&UWATE)) return 0;
 	return koma_flag & (1 << (k&KOMATYPE2));
 }
 
@@ -204,16 +203,16 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 	int ou_y = shogi->ou_y;
 	int oute_num = 0;
 	BitBoard9x9 outePosKikiB = { 0 };	 // 王手ゴマの位置を記録
-	int kabegomaInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
+	int pinInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
 	
-	oute_num = checkOute(&outePosKikiB, kabegomaInfo, shogiBan, ou_x, ou_y); 
+	oute_num = checkOute(&outePosKikiB, pinInfo, shogiBan, ou_x, ou_y); 
 	printf("outen: %d\n", oute_num);
-	/*for (int y=0; y<BanY; y++) {
+	for (int y=0; y<BanY; y++) {
 		for (int x=0; x<BanX; x++) {
-			printf("%d", kabegomaInfo[y][x]);
+			printf("%d", pinInfo[y][x]);
 		}
 		printf("\n");
-	}*/
+	}
 	
 	BitBoard9x9 uwateKikiB = {0}; // 相手駒の効き 王は壁にしない
 	unsigned int usedLineFU = 0;
@@ -229,19 +228,19 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 					usedLineFU |= (1u << x);
 					FUBR;
 					cs=createSashiteFU(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				case KY: KYBR;
 					cs=createSashiteKY(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
+							pinInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
 				case KE: KEBR;
 					cs=createSashiteKE(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				case GI: GIBR;
 					cs=createSashiteGI(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				case KI:
 				case NFU:
@@ -249,23 +248,23 @@ void createSashite(ShogiKykumen *shogi, Sashite *s, int *n)
 				case NKE:
 				case NGI: KIBR; 
 					cs=createSashiteKI(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 					break;
 				
 				case UMA: UMABR; // 十字4箇所だけ
 					cs=createSashiteUMA(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 				case KA: KABR; // 馬と共通。馬のときは成りなし
 					cs=createSashiteKA(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB, k==UMA);
+							pinInfo[y][x], oute_num, &outePosKikiB, k==UMA);
 					break;
 				
 				case RYU: RYUBR; // 斜め4つだけ
 					cs=createSashiteRYU(cs, shogiBan, x, y,
-							kabegomaInfo[y][x], oute_num, &outePosKikiB);
+							pinInfo[y][x], oute_num, &outePosKikiB);
 
 				case HI: HIBR;  // 竜と共通。竜のときは成りなし
-					cs=createSashiteHI(cs, shogiBan, x, y, kabegomaInfo[y][x], oute_num, &outePosKikiB, k==RYU);
+					cs=createSashiteHI(cs, shogiBan, x, y, pinInfo[y][x], oute_num, &outePosKikiB, k==RYU);
 					break;
 				
 				// 上手の効きと位置の記録
@@ -398,7 +397,7 @@ inline int existsOuteGomaInLine(
 		setBitBB(&workBB, x, y);
 		if (k != EMP) {
 			if (k & UWATE) {
-				if (isKoma(k, i==0 ? direct : indirect, 1)){
+				if (isKoma(k, i==0 ? direct : indirect)){
 					setBitsBB(outePosKikiB,&workBB);
 					return 1;
 				}
@@ -408,9 +407,9 @@ inline int existsOuteGomaInLine(
 			int xx = x; int yy = y;
 			for (int j=i+1;j<maxloop;j++) {
 				xx+=incx; yy+=incy;
-				Koma kk=shogiBan[y][x];
-				if (kk != EMP) {
-					if (isKoma(k, indirect, 1)){
+				k=shogiBan[yy][xx];
+				if (k != EMP) {
+					if ((k&UWATE)&&isKoma(k, indirect)){
 						pinInfo[y][x] = pin;
 					}
 					return 0;
@@ -790,19 +789,15 @@ inline bool existsKikiGomaInLine(
 		Koma (*shogiBan)[BanX], int x, int y,
 		int incx, int incy, int maxloop,
 		int direct, int indirect, int allow_pin,
-		int (*ukabegomaInfo)[BanX])
+		int (*uPinInfo)[BanX])
 {
 	if (maxloop==0) return false;
-	x+=incx; y+=incy;
-	if (shogiBan[y][x] != EMP) {
-		return (isKoma(shogiBan[y][x],direct,1)
-			&& !(ukabegomaInfo[y][x]&(~allow_pin)));
-	}
 	for (int i=1; i<maxloop; i++) {
 		x+=incx; y+=incy;
 		if (shogiBan[y][x] != EMP) {
-			return (isKoma(shogiBan[y][x],indirect,1)
-					&& !(ukabegomaInfo[y][x]&(~allow_pin)));
+			return ((shogiBan[y][x]&UWATE)
+					&& isKoma(shogiBan[y][x],i==0?direct:indirect)
+					&& !(uPinInfo[y][x]&(~allow_pin)));
 		}
 	}
 	return false;
