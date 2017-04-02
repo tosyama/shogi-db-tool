@@ -33,7 +33,7 @@ int main(int argc, const char * argv[]) {
 	}
     Sashite s[200];
     int n;
-    createSashite(&shogi, s, &n);
+    createSashiteAll(&shogi, s, &n);
     
     Sashite si[200];
     si[0].type = SASHITE_RESULT;
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
         i+=cmd;
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
-        createSashite(&shogi, s, &n);
+        createSashiteAll(&shogi, s, &n);
         fprintf(logf, "手の数: %d\n", n);
 
 		printKyokumen(logf, &shogi);
