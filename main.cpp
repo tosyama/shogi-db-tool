@@ -33,7 +33,7 @@ int main(int argc, const char * argv[]) {
 	}
     Sashite s[200];
     int n;
-    createSashite(&shogi, s, &n);
+    createSashiteAll(&shogi, s, &n);
     
     Sashite si[200];
     si[0].type = SASHITE_RESULT;
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
         i+=cmd;
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
-        createSashite(&shogi, s, &n);
+        createSashiteAll(&shogi, s, &n);
         fprintf(logf, "手の数: %d\n", n);
 
 		printKyokumen(logf, &shogi);
@@ -51,12 +51,12 @@ int main(int argc, const char * argv[]) {
 			if (s[j].type == SASHITE_IDOU) {
 				int x = s[j].idou.from_x;
 				int y = s[j].idou.from_y;
-				// fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
-				// 		j+1,
-				// 		komaStr[shogi.shogiBan[y][x]],
-				// 		STD_X(x), STD_Y(y),
-				// 		STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
-				// 		s[j].idou.nari?"+":"");
+				fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
+						j+1,
+						komaStr[shogi.shogiBan[y][x]],
+						STD_X(x), STD_Y(y),
+						STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
+						s[j].idou.nari?"+":"");
 			} else if (s[j].type == SASHITE_UCHI)
 				fprintf(logf, "%.2d %s>(%d,%d)\n",
 						j+1,
