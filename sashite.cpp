@@ -17,7 +17,7 @@ int sasu(ShogiKykumen *shogi, Sashite *s)
         s->idou.torigoma = sashite1(shogi, s->idou.from_x, s->idou.from_y, s->idou.to_x, s->idou.to_y, s->idou.nari);
         
     } else if(s->type == SASHITE_UCHI) {
-        sashite2(shogi, s->uchi.uwate, s->uchi.koma, s->uchi.to_x, s->uchi.to_y);
+        sashite2(shogi, s->uchi.uwate, (Koma)s->uchi.koma, s->uchi.to_x, s->uchi.to_y);
     
     } else if(s->type == SASHITE_RESULT) {
         return s->result.winner;

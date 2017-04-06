@@ -107,7 +107,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
     printKyokumen(stdout, shogi);
     
     while (1) {
-        printf("move:1-9 1-9 1-9 1-9 + uchi:[^v]1-7 1-9 1-9\nundo:-1, show cd:s print:p, quit:q,\n>");
+        printf("move:1-9 1-9 1-9 1-9 + uchi:[^v]1-7 1-9 1-9\nundo:-1, show cd:s(v) print:p, quit:q,\n>");
 		fflush(stdout);
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
@@ -159,7 +159,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                 printKyokumen(stdout, shogi);
             } else if (buf[0] == 's') { // show code
 				char code[KykumenCodeLen];
-				createKyokumenCode(code, shogi, 0);
+				createKyokumenCode(code, shogi, (buf[1]=='v') ? 1 : 0);
 				printf("%s\n", code);
 			}
         } else {

@@ -16,22 +16,32 @@ enum SashiteType {
 };
 
 typedef union {
-    int type;
+    unsigned int type : 2;
     struct {    // SASHITE_IDOU
-        int type;
-        int from_x, from_y, to_x, to_y, nari;
+        unsigned int type : 2;
+        unsigned int from_x : 5;
+		unsigned int from_y : 5;
+		unsigned int to_x : 5;
+		unsigned int to_y : 5;
+		unsigned int nari : 1;
+		unsigned int : 0;
         Koma torigoma;
     } idou;
     struct {    // SASHITE_UCHI
-        int type;
-        int uwate;
-        int to_x, to_y;
-        Koma koma;
+        unsigned int type : 2;
+        unsigned int uwate : 1;
+		unsigned int koma: 9;
+        unsigned int to_x : 5;
+		unsigned int to_y : 5;
     } uchi;
     struct {    // SASHITE_RESULT
-        int type;
-        int winner; // 0:先手, 1:後手(上手), 2: 千日手
+        unsigned int type : 2;
+        unsigned int winner : 2; // 0:先手, 1:後手(上手), 2: 千日手
     } result;
+	struct {
+		unsigned int from : 12;
+		unsigned int to : 10;
+	} data;
 } Sashite;
 
 
