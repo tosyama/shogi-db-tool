@@ -48,3 +48,4 @@ typedef union {
 int sasu(ShogiKykumen *shogi, Sashite *s);
 void temodoshi(ShogiKykumen *shogi, const Sashite *s);
 
+int extractSashie(const Sashite **start, Sashite target, const Sashite *array, int n); 

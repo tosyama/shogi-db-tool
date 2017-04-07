@@ -157,7 +157,6 @@ void createSashiteAll(ShogiKykumen *shogi, Sashite *s, int *n)
 	int pinInfo[BanY][BanX] = { 0 };	// pinされている駒の向きを記録
 	
 	oute_num = checkOute(&outePosKikiB, pinInfo, shogiBan, ou_x, ou_y); 
-	printf("outen: %d\n", oute_num);
 	
 	BitBoard9x9 uwateKikiB = {0}; // 相手駒の効き 王は壁にしない
 	unsigned int usedLineFU = 0;
@@ -812,6 +811,9 @@ bool checkUchiFUZume(Koma (*shogiBan)[BanX], int x, int y)
 {
 	int uPinInfo[BanY][BanX] = {0};
 
+	// 王手の判定
+	if (shogiBan[y-1][x] != UOU) return false;
+
 	// 王の逃げ場チェック
 	BitBoard9x9 escapeAreaB={0};
 	BitBoard9x9 ou_range={0};
@@ -824,8 +826,6 @@ bool checkUchiFUZume(Koma (*shogiBan)[BanX], int x, int y)
 	if (escapeAreaB.topmid != ou_range.topmid || escapeAreaB.bottom != ou_range.bottom)
 		return false; // 逃げ場あり
 
-	// 王手の判定
-	if (shogiBan[y-1][x] != UOU) return false;
 	// 打った歩が取られるか？
 	if (existsKikiGomaInLine(shogiBan,x,y,-1,-1,min(x,y),F_NAMAE_GOMA,F_KA_UMA,LNanamePin,uPinInfo)) return false;
 	if (existsKikiGomaInLine(shogiBan,x,y,1,-1,min(BanX-1-x,y),F_NAMAE_GOMA,F_KA_UMA,RNanamePin,uPinInfo)) return false;
@@ -844,7 +844,7 @@ bool checkUchiFUZume(Koma (*shogiBan)[BanX], int x, int y)
 		}
 	}
 
-	return false;
+	return true;
 }
 
 Sashite *createSashiteUchiFU(Sashite *te, 
@@ -861,9 +861,9 @@ Sashite *createSashiteUchiFU(Sashite *te,
 				if (!checkUchiFUZume(shogiBan, x, y)) {
 					te->type = SASHITE_UCHI;
 					te->uchi.uwate = 0;
+					te->uchi.koma = FU;
 					te->uchi.to_y = y;
 					te->uchi.to_x = x;
-					te->uchi.koma = FU;
 					te++;
 				}
 			}

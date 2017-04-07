@@ -65,3 +65,19 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
     }
 }
 
+int extractSashie(const Sashite **start, Sashite target, const Sashite *array, int n)
+{
+	*start = NULL;
+	for (int i=0; i<n; ++i) {
+		if (target.data.from == array[i].data.from) {
+			int tn = 1;
+			*start = array+i;
+			for (int j=i+1; j<n; ++j) {
+				if (target.data.from == array[j].data.from) ++tn;
+				else return tn;
+			}
+			return tn;
+		}
+	}
+	return 0;
+}

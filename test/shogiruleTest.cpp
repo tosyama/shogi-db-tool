@@ -7,11 +7,12 @@
 
 TEST_CASE("Create all sashite.", "[rule]")
 {
+    shg_log = fopen("test.log", "w");
     ShogiKykumen shogi;
     resetShogiBan(&shogi);
     Sashite s[600];
     int n;
-	char *code;
+	const char *code;
 	
 	// first case
     createSashiteAll(&shogi, s, &n);
@@ -21,7 +22,7 @@ TEST_CASE("Create all sashite.", "[rule]")
 	code = ".43~~~~00/02~0-~0;~30~~~~00uwy~H000~~~~~~~~~~~~~~~~~~";
 	loadKyokumenFromCode(&shogi, code);
     createSashiteAll(&shogi, s, &n);
-	CHECK(n==593);
+	CHECK(n==MAX_LEGAL_SASHITE);
 
 	// general case
 	code = "#i29~j~308Kc~26~0$E10+fs~20!-rz8020?@BFGNSlJRXZe~~~~~";
@@ -31,5 +32,15 @@ TEST_CASE("Create all sashite.", "[rule]")
 
 	code = "Dv2&)1w20$*Ux1/p15j20#+sy20!-Wz9000789;<=>?CT_acefgh~";
 	loadKyokumenFromCode(&shogi, code);
+	printKyokumen(shg_log, &shogi);
     createSashiteAll(&shogi, s, &n);
+	Sashite uchifu;
+	uchifu.type = SASHITE_UCHI;
+	uchifu.uchi.uwate = 0;
+	uchifu.uchi.koma = FU;
+	const Sashite *ss;
+	int n_fu = extractSashie(&ss, uchifu, s, n); 
+	CHECK(n_fu==4); 
+
+	fclose(shg_log);
 }
