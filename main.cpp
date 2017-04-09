@@ -20,12 +20,13 @@
 static int interactiveCUI(ShogiKykumen *shogi, Sashite *s);
 
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
-FILE *logf = NULL;
+FILE *shg_log = NULL;
+
 int main(int argc, const char * argv[]) {
     Kifu kifu;
     ShogiKykumen shogi;
     char code[KykumenCodeLen];
-    logf = fopen("shogidbtool.log", "w");
+    shg_log = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
     if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
@@ -44,21 +45,21 @@ int main(int argc, const char * argv[]) {
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
         createSashiteAll(&shogi, s, &n);
-        fprintf(logf, "手の数: %d\n", n);
+        fprintf(shg_log, "手の数: %d\n", n);
 
-		printKyokumen(logf, &shogi);
+		printKyokumen(shg_log, &shogi);
         for (int j=0; j<n; j++) {
 			if (s[j].type == SASHITE_IDOU) {
 				int x = s[j].idou.from_x;
 				int y = s[j].idou.from_y;
-				fprintf(logf, "%.2d %s(%d,%d)>(%d,%d)%s\n",
+				fprintf(shg_log, "%.2d %s(%d,%d)>(%d,%d)%s\n",
 						j+1,
 						komaStr[shogi.shogiBan[y][x]],
 						STD_X(x), STD_Y(y),
 						STD_X(s[j].idou.to_x), STD_Y(s[j].idou.to_y),
 						s[j].idou.nari?"+":"");
 			} else if (s[j].type == SASHITE_UCHI)
-				fprintf(logf, "%.2d %s>(%d,%d)\n",
+				fprintf(shg_log, "%.2d %s>(%d,%d)\n",
 						j+1,
 						komaStr[s[j].uchi.koma],
 						STD_X(s[j].uchi.to_x), STD_Y(s[j].uchi.to_y));
@@ -94,7 +95,7 @@ int main(int argc, const char * argv[]) {
         if (readKIF(fname, &kifu) > 0)
             insertShogiDB("shogiDb.db", &kifu);
     } */
-    fclose(logf);
+    fclose(shg_log);
     return 0;
 }
 
@@ -107,7 +108,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
     printKyokumen(stdout, shogi);
     
     while (1) {
-        printf("move:1-9 1-9 1-9 1-9 + uchi:[^v]1-7 1-9 1-9\nundo:-1, show cd:s print:p, quit:q,\n>");
+        printf("move:1-9 1-9 1-9 1-9 + uchi:[^v]1-7 1-9 1-9\nundo:-1, show cd:s(v) print:p, quit:q,\n>");
 		fflush(stdout);
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
@@ -159,7 +160,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                 printKyokumen(stdout, shogi);
             } else if (buf[0] == 's') { // show code
 				char code[KykumenCodeLen];
-				createKyokumenCode(code, shogi, 0);
+				createKyokumenCode(code, shogi, (buf[1]=='v') ? 1 : 0);
 				printf("%s\n", code);
 			}
         } else {

@@ -17,7 +17,7 @@ int sasu(ShogiKykumen *shogi, Sashite *s)
         s->idou.torigoma = sashite1(shogi, s->idou.from_x, s->idou.from_y, s->idou.to_x, s->idou.to_y, s->idou.nari);
         
     } else if(s->type == SASHITE_UCHI) {
-        sashite2(shogi, s->uchi.uwate, s->uchi.koma, s->uchi.to_x, s->uchi.to_y);
+        sashite2(shogi, s->uchi.uwate, (Koma)s->uchi.koma, s->uchi.to_x, s->uchi.to_y);
     
     } else if(s->type == SASHITE_RESULT) {
         return s->result.winner;
@@ -35,7 +35,7 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
     int (*komaDai)[DaiN] = shogi->komaDai;
 
     if (s->type == SASHITE_IDOU) {
-        Koma torik = s->idou.torigoma;
+        Koma torik = (Koma)s->idou.torigoma;
         Koma k =shogiBan[s->idou.to_y][s->idou.to_x];
         assert(k != EMP);
         if(s->idou.nari) k = (Koma)(k ^ NARI);
@@ -65,3 +65,19 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
     }
 }
 
+int extractSashie(const Sashite **start, Sashite target, const Sashite *array, int n)
+{
+	*start = NULL;
+	for (int i=0; i<n; ++i) {
+		if (target.data.from == array[i].data.from) {
+			int tn = 1;
+			*start = array+i;
+			for (int j=i+1; j<n; ++j) {
+				if (target.data.from == array[j].data.from) ++tn;
+				else return tn;
+			}
+			return tn;
+		}
+	}
+	return 0;
+}

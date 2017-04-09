@@ -1,19 +1,20 @@
 PROGRAM = a.out
 OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o shogirule.o
+TEST = test/tester
+TESTCASES = test/*Test.cpp
 
 .SUFFIXES: .cpp .o
 
-$(PROGRAM): $(OBJS)
-	$(CXX) -o $(PROGRAM) $^ -lsqlite3
+$(PROGRAM): $(OBJS) $(TEST)
+	cd test && $(MAKE) test
+	$(CXX) -o $(PROGRAM) $(OBJS) -lsqlite3
 
 .cpp.o:
 	$(CXX) -c -g $<
 
-main.o: shogiban.h kyokumencode.h sashite.h
-shogiban.o: shogiban.h
-kyokumencode.o: shogiban.h kyokumencode.h
-sashite.o: shogiban.h sashite.h
-kifu.o: kifu.h
+$(TEST): $(OBJS) $(TESTCASES)
+	$(MAKE) -C test
+
 .PHONY: depend
 depend: $(OBJS:.o=.cpp)
 	-@ $(RM) depend.inc
@@ -21,5 +22,5 @@ depend: $(OBJS:.o=.cpp)
 -include depend.inc
 .PHONY: package
 package:
-	apt-get -y install libsqlite3-dev
-
+	-apt-get -y install libsqlite3-dev
+	-curl -o test/catch.hpp https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp
