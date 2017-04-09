@@ -28,7 +28,6 @@ int main(int argc, const char * argv[]) {
     char code[KykumenCodeLen];
     shg_log = fopen("shogidbtool.log", "w");
 
-	printf("s:%d\n",sizeof(Sashite));
     resetShogiBan(&shogi);
     if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
 		loadKyokumenFromCode(&shogi, argv[1]);
