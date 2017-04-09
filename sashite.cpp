@@ -35,7 +35,7 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
     int (*komaDai)[DaiN] = shogi->komaDai;
 
     if (s->type == SASHITE_IDOU) {
-        Koma torik = s->idou.torigoma;
+        Koma torik = (Koma)s->idou.torigoma;
         Koma k =shogiBan[s->idou.to_y][s->idou.to_x];
         assert(k != EMP);
         if(s->idou.nari) k = (Koma)(k ^ NARI);

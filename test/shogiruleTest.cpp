@@ -7,7 +7,6 @@
 
 TEST_CASE("Create all sashite.", "[rule]")
 {
-    shg_log = fopen("test.log", "w");
     ShogiKykumen shogi;
     resetShogiBan(&shogi);
     Sashite s[600];
@@ -30,17 +29,33 @@ TEST_CASE("Create all sashite.", "[rule]")
     createSashiteAll(&shogi, s, &n);
 	CHECK(n==207);
 
-	code = "Dv2&)1w20$*Ux1/p15j20#+sy20!-Wz9000789;<=>?CT_acefgh~";
-	loadKyokumenFromCode(&shogi, code);
-	printKyokumen(shg_log, &shogi);
-    createSashiteAll(&shogi, s, &n);
+	// uchi FU case
 	Sashite uchifu;
 	uchifu.type = SASHITE_UCHI;
 	uchifu.uchi.uwate = 0;
 	uchifu.uchi.koma = FU;
 	const Sashite *ss;
-	int n_fu = extractSashie(&ss, uchifu, s, n); 
+	int n_fu;
+
+	// excludes fu oute.
+	code = "Dv2&)1w20$*Ux1/p15j20#+sy20!-Wz9000789;<=>?CT_acefgh~";
+	loadKyokumenFromCode(&shogi, code);
+    createSashiteAll(&shogi, s, &n);
+	n_fu = extractSashie(&ss, uchifu, s, n); 
 	CHECK(n_fu==4); 
 
-	fclose(shg_log);
+	// includes fu oute.
+	code = "Dv2&)1w20$*Vx1/p15j20#+sy20!-rz9000789;<=>?CT_acefgh~";
+	loadKyokumenFromCode(&shogi, code);
+    createSashiteAll(&shogi, s, &n);
+	n_fu = extractSashie(&ss, uchifu, s, n); 
+	CHECK(n_fu==4); 
+
+	// includes fu oute.
+	code = "Dv2&)1w20$*Ux1/p15j20#+sy20!-Wz9000789;<>?CFT_acefgh~";
+	loadKyokumenFromCode(&shogi, code);
+    createSashiteAll(&shogi, s, &n);
+	n_fu = extractSashie(&ss, uchifu, s, n); 
+	CHECK(n_fu==5); 
+
 }
