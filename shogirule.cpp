@@ -298,7 +298,7 @@ void createSashiteAll(ShogiKykumen *shogi, Sashite *s, int *n)
 	}
 
 	//王の移動 相手の効きがある場合は移動できない
-	{
+	if (ou_x != NonPos){
 		BitBoard9x9 noUwateKiki;
 		noUwateKiki.topmid = ~uwateKikiB.topmid;
 		noUwateKiki.bottom = ~uwateKikiB.bottom;
@@ -366,6 +366,8 @@ int checkOute(BitBoard9x9 *outePosKikiB, int (*pinInfo)[BanX],
 		Koma (*shogiBan)[BanX], int ou_x, int ou_y)
 {
 	int oute_num = 0;
+	if (ou_x == NonPos) return 0;
+
 	if (ou_y >= 2) {
 		if (ou_x >= 1 && shogiBan[ou_y-2][ou_x-1]==UKE) {
 			setBitBB(outePosKikiB, ou_x-1, ou_y-2);

@@ -33,7 +33,7 @@ int main(int argc, const char * argv[]) {
 		loadKyokumenFromCode(&shogi, argv[1]);
 	}
     Sashite s[200];
-    int n;
+    int n=0;
     createSashiteAll(&shogi, s, &n);
     
     Sashite si[200];
@@ -44,7 +44,7 @@ int main(int argc, const char * argv[]) {
         i+=cmd;
         if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
-        createSashiteAll(&shogi, s, &n);
+        // createSashiteAll(&shogi, s, &n);
         fprintf(shg_log, "手の数: %d\n", n);
 
 		printKyokumen(shg_log, &shogi);
@@ -114,6 +114,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
                 tx = buf[2] - '0'; ty = buf[3] - '0';
+				if(fx==tx && fy==ty) continue;
                 if(fx >= 1 && fx <=9 && fy >= 1 && fy <= 9 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
                     s->type = SASHITE_IDOU;
                     s->idou.from_x = INNER_X(fx);
@@ -126,7 +127,8 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                     else
                         s->idou.nari = 0;
                     
-                    if (shogiBan[s->idou.from_y][s->idou.from_x] != EMP) {
+                    if (shogiBan[s->idou.from_y][s->idou.from_x] != EMP
+                    	&& (shogiBan[s->idou.to_y][s->idou.to_x]|UWATE) != UOU) {
                         sasu(shogi,s);
                         return 1;
                     }
@@ -162,6 +164,18 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 				char code[KykumenCodeLen];
 				createKyokumenCode(code, shogi, (buf[1]=='v') ? 1 : 0);
 				printf("%s\n", code);
+			} else if (buf[0] == 'd') { // delete
+                fx = buf[1] - '0'; fy = buf[2] - '0';
+                if(fx >= 1 && fx <=9 && fy >= 1 && fy <=9) {
+					fx = INNER_X(fx);
+					fy = INNER_Y(fy);
+					if ((k=shogiBan[fy][fx])!=EMP) {
+						if (k==OU) shogi->ou_x = shogi->ou_y = NonPos;	
+						if (k==UOU) shogi->uou_x = shogi->uou_y = NonPos;	
+						shogiBan[fy][fx]=EMP;
+						printf("Deleted.\n");
+					}
+				}
 			}
         } else {
             return 0;

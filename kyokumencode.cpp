@@ -103,8 +103,8 @@ void createKyokumenCode(char code[], const  ShogiKykumen *shogi, int rev)
     Koma  codeKomas[7] = {KI, GI, HI, KA, KE, KY, FU};
     int codePos = 0;
     // 王
-    code[codePos++] = uKomaPos[OU][0];
-    code[codePos++] = komaPos[OU][0];
+    code[codePos++] = uKomaNum[OU]?uKomaPos[OU][0]:komaNashiCode;
+    code[codePos++] = komaNum[OU]?komaPos[OU][0]:komaNashiCode;
     
     for (int c=0; c<7; c++) {
         Koma k = codeKomas[c];
@@ -195,12 +195,17 @@ void loadKyokumenFromCode(ShogiKykumen *shogi, const char code[])
         assert(p != -1);
         
         shogiBan[(shogi->uou_y = p/BanX)][(shogi->uou_x = p%BanX)] = UOU;
-        
-    }
+    } else {
+		shogi->uou_x = NonPos;
+		shogi->uou_y = NonPos;
+	}
     if (code[1] != ' ') {
         int p = banjouPos[code[1]-'!'];
         shogiBan[(shogi->ou_y = p/BanX)][(shogi->ou_x = p%BanX)] = OU;
-    }
+    } else {
+		shogi->ou_x = NonPos;
+		shogi->ou_y = NonPos;
+	}
     
     //その他
     Koma  codeKomas[7] = {KI, GI, HI, KA, KE, KY, FU};
@@ -255,10 +260,12 @@ void loadKyokumenFromCode(ShogiKykumen *shogi, const char code[])
             default:
                 break;
         }
-        
         for (int i=0; i<allKomaNum[k];i++) {
-            assert(code[codePos]>='!' && code[codePos]<='~');
-            if (code[codePos] == '~') {
+            assert((code[codePos]>='!' && code[codePos]<='~')
+					|| code[codePos]==' ');
+			if (code[codePos] == ' ') {
+				// Skip
+            } else if (code[codePos] == '~') {
                 if (i<unum) komaDai[1][k]++;
                 else komaDai[0][k]++;
             } else {
