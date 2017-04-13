@@ -42,7 +42,7 @@ int main(int argc, const char * argv[]) {
     int cmd;
     while ((cmd = interactiveCUI(&shogi, &si[i]))) {
         i+=cmd;
-        if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
+        if (i<=0) {i=0; si[0].type = SASHITE_RESULT;}
         if (cmd>0) {si[i]=si[i-1];}
         // createSashiteAll(&shogi, s, &n);
         fprintf(shg_log, "手の数: %d\n", n);
@@ -154,8 +154,10 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 					}
 				}
             } else if (buf[0] == '-') {
-                temodoshi(shogi, s);
-                return -1;
+				if (s->type != SASHITE_RESULT) {
+					temodoshi(shogi, s);
+					return -1;
+				}
             } else if (buf[0] == 'q') { // end
                 return 0;
             } else if (buf[0] == 'p') { // print
@@ -174,6 +176,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 						if (k==UOU) shogi->uou_x = shogi->uou_y = NonPos;	
 						shogiBan[fy][fx]=EMP;
 						printf("Deleted.\n");
+						return -999;
 					}
 				}
 			}
