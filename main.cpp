@@ -44,7 +44,7 @@ int main(int argc, const char * argv[]) {
         i+=cmd;
         if (i<=0) {i=0; si[0].type = SASHITE_RESULT;}
         else {si[i]=si[i-1];}
-        // createSashiteAll(&shogi, s, &n);
+        createSashiteAll(&shogi, s, &n);
         fprintf(shg_log, "手の数: %d\n", n);
 
 		printKyokumen(shg_log, &shogi);

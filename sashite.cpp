@@ -42,7 +42,15 @@ void temodoshi(ShogiKykumen *shogi, const Sashite *s)
         shogiBan[s->idou.to_y][s->idou.to_x] = torik;
         if (torik != EMP) {
 			int dai_uwate;
-            if(k!=EMP)dai_uwate = (k&UWATE) ? 1 : 0;
+			if(torik==OU) {
+				shogi->ou_x = s->idou.to_x;
+				shogi->ou_y = s->idou.to_y;
+				dai_uwate = 0;
+			} else if(torik==UOU) {
+				shogi->uou_x = s->idou.to_x;
+				shogi->uou_y = s->idou.to_y;
+				dai_uwate = 1;
+			} else if(k!=EMP)dai_uwate = (k&UWATE) ? 1 : 0;
             else dai_uwate = (torik&UWATE) ? 1 : 0;
             assert(komaDai[dai_uwate][torik&KOMATYPE1] > 0);
             komaDai[dai_uwate][torik&KOMATYPE1]--;

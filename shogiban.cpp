@@ -111,16 +111,17 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     }
 
     if (k2 != EMP) {
-        if (k1 & UWATE) {
+		if (k2==OU) {
+			shogi->ou_x = shogi->ou_y = NonPos;
+            komaDai[0][0]++;
+		} else if (k2 == UOU) {
+			shogi->uou_x = shogi->uou_y = NonPos;
+            komaDai[1][0]++;
+		} else if (k1 & UWATE) {
             komaDai[1][k2 & KOMATYPE1]++;
         } else {
             komaDai[0][k2 & KOMATYPE1]++;
         }
-		if (k2==OU) {
-			shogi->ou_x = shogi->ou_y = NonPos;
-		} else if (k2 == UOU) {
-			shogi->uou_x = shogi->uou_y = NonPos;
-		}
     }
     
     if (nari) {
