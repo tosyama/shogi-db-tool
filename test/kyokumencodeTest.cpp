@@ -105,7 +105,6 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	len = strlen(code);
 	REQUIRE(len == KykumenCodeLen-1);
 
-	printf("%s\n",code);
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
 
@@ -132,7 +131,6 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	len = strlen(code);
 	REQUIRE(len == KykumenCodeLen-1);
 
-	printf("%s\n",code);
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
 

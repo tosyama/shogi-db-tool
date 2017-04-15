@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
     while ((cmd = interactiveCUI(&shogi, &si[i]))) {
         i+=cmd;
         if (i<=0) {i=0; si[0].type = SASHITE_RESULT;}
-        if (cmd>0) {si[i]=si[i-1];}
+        else {si[i]=si[i-1];}
         // createSashiteAll(&shogi, s, &n);
         fprintf(shg_log, "手の数: %d\n", n);
 
@@ -114,7 +114,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
                 tx = buf[2] - '0'; ty = buf[3] - '0';
-				if(fx==tx && fy==ty) continue;
+
                 if(fx >= 1 && fx <=9 && fy >= 1 && fy <= 9 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
                     s->type = SASHITE_IDOU;
                     s->idou.from_x = INNER_X(fx);

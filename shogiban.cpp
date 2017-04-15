@@ -99,8 +99,6 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
     
-	assert(from_x != to_x || from_y != to_y);
-
     Koma k1, k2;
     k1 = shogiBan[from_y][from_x];
     k2 = shogiBan[to_y][to_x];

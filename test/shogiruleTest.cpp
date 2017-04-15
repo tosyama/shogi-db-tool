@@ -58,4 +58,9 @@ TEST_CASE("Create all sashite.", "[rule]")
 	n_fu = extractSashie(&ss, uchifu, s, n); 
 	CHECK(n_fu==5); 
 
+	// no OU.
+	code = "  2&)uw20$*tx1/p15j20#+sy20!-rz9000789:;<=>?_abcdefgh";
+	loadKyokumenFromCode(&shogi, code);
+    createSashiteAll(&shogi, s, &n);
+	CHECK(n==29); 
 }
