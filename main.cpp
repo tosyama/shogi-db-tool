@@ -127,8 +127,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
                     else
                         s->idou.nari = 0;
                     
-                    if (shogiBan[s->idou.from_y][s->idou.from_x] != EMP
-                    	&& (shogiBan[s->idou.to_y][s->idou.to_x]|UWATE) != UOU) {
+                    if (shogiBan[s->idou.from_y][s->idou.from_x] != EMP) {
                         sasu(shogi,s);
                         return 1;
                     }
