@@ -58,14 +58,12 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
     ShogiKykumen load_shogi;
 
 	char code[KykumenCodeLen];
-	int len;
 	char result[32];
 
 	// first case.
     resetShogiBan(&save_shogi);
 	createKyokumenCode(code, &save_shogi);
-	len = strlen(code);
-	REQUIRE(len == KykumenCodeLen-1);
+	REQUIRE(strlen(code) == KykumenCodeLen-1);
 
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
@@ -83,8 +81,6 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	save_shogi.uou_x = save_shogi.uou_y = NonPos;
 
 	createKyokumenCode(code, &save_shogi);
-	len = strlen(code);
-	REQUIRE(len == KykumenCodeLen-1);
 
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
@@ -93,6 +89,7 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	CHECK_THAT(result, Equals("match"));
 
 	// tegoma only
+	save_shogi.komaDai[0][0]=1;
 	save_shogi.komaDai[0][FU]=18;
 	save_shogi.komaDai[0][KY]=4;
 	save_shogi.komaDai[0][KE]=4;
@@ -102,8 +99,6 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	save_shogi.komaDai[0][HI]=2;
 
 	createKyokumenCode(code, &save_shogi);
-	len = strlen(code);
-	REQUIRE(len == KykumenCodeLen-1);
 
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
@@ -111,6 +106,7 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	equalShogiban(result, &save_shogi, &load_shogi);
 	CHECK_THAT(result, Equals("match"));
 
+	save_shogi.komaDai[0][0]=0;
 	save_shogi.komaDai[0][FU]=0;
 	save_shogi.komaDai[0][KY]=0;
 	save_shogi.komaDai[0][KE]=0;
@@ -119,6 +115,7 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	save_shogi.komaDai[0][KA]=0;
 	save_shogi.komaDai[0][HI]=0;
 
+	save_shogi.komaDai[1][0]=1;
 	save_shogi.komaDai[1][FU]=18;
 	save_shogi.komaDai[1][KY]=4;
 	save_shogi.komaDai[1][KE]=4;
@@ -128,8 +125,6 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 	save_shogi.komaDai[1][HI]=2;
 
 	createKyokumenCode(code, &save_shogi);
-	len = strlen(code);
-	REQUIRE(len == KykumenCodeLen-1);
 
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);
