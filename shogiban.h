@@ -55,6 +55,7 @@ enum Koma {
 #define BanX    9
 #define BanY    9
 #define DaiN    8
+#define NonPos	0xf
 
 typedef struct {
     Koma shogiBan[BanY][BanX];

@@ -25,15 +25,15 @@ FILE *shg_log = NULL;
 int main(int argc, const char * argv[]) {
     Kifu kifu;
     ShogiKykumen shogi;
-    char code[KykumenCodeLen];
+    char code[KyokumenCodeLen];
     shg_log = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
+    if (argc==2 && strlen(argv[1])==(KyokumenCodeLen-1)) {
 		loadKyokumenFromCode(&shogi, argv[1]);
 	}
     Sashite s[200];
-    int n;
+    int n=0;
     createSashiteAll(&shogi, s, &n);
     
     Sashite si[200];
@@ -42,8 +42,8 @@ int main(int argc, const char * argv[]) {
     int cmd;
     while ((cmd = interactiveCUI(&shogi, &si[i]))) {
         i+=cmd;
-        if (i<0) {i=0; si[0].type = SASHITE_RESULT;}
-        if (cmd>0) {si[i]=si[i-1];}
+        if (i<=0) {i=0; si[0].type = SASHITE_RESULT;}
+        else {si[i]=si[i-1];}
         createSashiteAll(&shogi, s, &n);
         fprintf(shg_log, "手の数: %d\n", n);
 
@@ -114,6 +114,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             if (buf[0] >= '1' && buf[0] <= '9') { // move
                 fx = buf[0] - '0'; fy = buf[1] - '0';
                 tx = buf[2] - '0'; ty = buf[3] - '0';
+
                 if(fx >= 1 && fx <=9 && fy >= 1 && fy <= 9 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
                     s->type = SASHITE_IDOU;
                     s->idou.from_x = INNER_X(fx);
@@ -152,16 +153,31 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
 					}
 				}
             } else if (buf[0] == '-') {
-                temodoshi(shogi, s);
-                return -1;
+				if (s->type != SASHITE_RESULT) {
+					temodoshi(shogi, s);
+					return -1;
+				}
             } else if (buf[0] == 'q') { // end
                 return 0;
             } else if (buf[0] == 'p') { // print
                 printKyokumen(stdout, shogi);
             } else if (buf[0] == 's') { // show code
-				char code[KykumenCodeLen];
+				char code[KyokumenCodeLen];
 				createKyokumenCode(code, shogi, (buf[1]=='v') ? 1 : 0);
 				printf("%s\n", code);
+			} else if (buf[0] == 'd') { // delete
+                fx = buf[1] - '0'; fy = buf[2] - '0';
+                if(fx >= 1 && fx <=9 && fy >= 1 && fy <=9) {
+					fx = INNER_X(fx);
+					fy = INNER_Y(fy);
+					if ((k=shogiBan[fy][fx])!=EMP) {
+						if (k==OU) shogi->ou_x = shogi->ou_y = NonPos;	
+						if (k==UOU) shogi->uou_x = shogi->uou_y = NonPos;	
+						shogiBan[fy][fx]=EMP;
+						printf("Deleted.\n");
+						return -999;
+					}
+				}
 			}
         } else {
             return 0;

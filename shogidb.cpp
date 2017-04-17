@@ -136,7 +136,7 @@ void insertShogiDB(const char* filename, Kifu* kifu)
     ShogiKykumen shogi;
     int ky_id = 0;
     int uwate = 0;
-    char ky_code[KykumenCodeLen];
+    char ky_code[KyokumenCodeLen];
     resetShogiBan(&shogi);
     
     for (int i=0; i<500; i++) {
@@ -151,7 +151,7 @@ void insertShogiDB(const char* filename, Kifu* kifu)
             ret = sqlite3_prepare(db, "select KY_ID from KYOKUMEN_ID_MST where KY_CODE=?;", -1, &selSql, NULL);
             assert(ret == SQLITE_OK);
             sqlite3_reset(selSql);
-            sqlite3_bind_text(selSql, 1, ky_code, KykumenCodeLen, SQLITE_TRANSIENT);
+            sqlite3_bind_text(selSql, 1, ky_code, KyokumenCodeLen, SQLITE_TRANSIENT);
             if (SQLITE_ROW == sqlite3_step(selSql)) {
                 ky_id = sqlite3_column_int(selSql, 0);
             } else {
@@ -185,7 +185,7 @@ void insertShogiDB(const char* filename, Kifu* kifu)
             ret = sqlite3_prepare(db, "insert into KYOKUMEN_ID_MST (KY_CODE, KY_ID) values(?,?);", -1, &insMstSql, NULL);
             assert(ret == SQLITE_OK);
             sqlite3_reset(insMstSql);
-            sqlite3_bind_text(insMstSql, 1, ky_code, KykumenCodeLen, SQLITE_TRANSIENT);
+            sqlite3_bind_text(insMstSql, 1, ky_code, KyokumenCodeLen, SQLITE_TRANSIENT);
             sqlite3_bind_int(insMstSql, 2, max_ky_id);
 
             printf("+");

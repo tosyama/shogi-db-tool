@@ -53,12 +53,12 @@ void printKyokumen(FILE *f, ShogiKykumen *shogi)
     
     fprintf(f, "後手の持駒：");
     int nashi = 1;
-    for (int k=FU; k<DaiN; k++) {
+    for (int k=0; k<DaiN; k++) {
         if (komaDai[1][k] == 1) {
-            fprintf(f, "%s ", komaStr[k]);
+            fprintf(f, "%s ", komaStr[k?k:OU]);
             nashi = 0;
         } else if (komaDai[1][k]>1) {
-            fprintf(f, "%s%d ", komaStr[k], komaDai[1][k]);
+            fprintf(f, "%s%d ", komaStr[k?k:OU], komaDai[1][k]);
             nashi = 0;
         }
     }
@@ -80,12 +80,12 @@ void printKyokumen(FILE *f, ShogiKykumen *shogi)
     fprintf(f, "+---------------------------+\n");
     fprintf(f, "先手の持駒：");
     nashi = 1;
-    for (int k=FU; k<DaiN; k++) {
+    for (int k=0; k<DaiN; k++) {
         if (komaDai[0][k] == 1) {
-            fprintf(f, "%s ", komaStr[k]);
+            fprintf(f, "%s ", komaStr[k?k:OU]);
             nashi = 0;
         } else if (komaDai[0][k]>1) {
-            fprintf(f, "%s%d ", komaStr[k], komaDai[0][k]);
+            fprintf(f, "%s%d ", komaStr[k?k:OU], komaDai[0][k]);
             nashi = 0;
         }
     }
@@ -104,9 +104,20 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     k2 = shogiBan[to_y][to_x];
     
     assert(k1 != EMP);
-    
+    if (k1 == OU) { // 王の位置は常に記録
+        shogi->ou_x = to_x; shogi->ou_y = to_y;
+    } else if (k1 == UOU) {
+        shogi->uou_x = to_x; shogi->uou_y = to_y;
+    }
+
     if (k2 != EMP) {
-        if (k1 & UWATE) {
+		if (k2==OU) {
+			shogi->ou_x = shogi->ou_y = NonPos;
+            komaDai[0][0]++;
+		} else if (k2 == UOU) {
+			shogi->uou_x = shogi->uou_y = NonPos;
+            komaDai[1][0]++;
+		} else if (k1 & UWATE) {
             komaDai[1][k2 & KOMATYPE1]++;
         } else {
             komaDai[0][k2 & KOMATYPE1]++;
@@ -120,11 +131,6 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     else shogiBan[to_y][to_x] = k1;
     shogiBan[from_y][from_x] = EMP;
     
-    if (k1 == OU) { // 王の位置は常に記録
-        shogi->ou_x = to_x; shogi->ou_y = to_y;
-    } else if (k1 == UOU) {
-        shogi->uou_x = to_x; shogi->uou_y = to_y;
-    }
     return k2;  //手を戻すときに使用するため
 }
 
