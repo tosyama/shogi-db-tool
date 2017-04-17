@@ -57,13 +57,13 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
     ShogiKykumen save_shogi;
     ShogiKykumen load_shogi;
 
-	char code[KykumenCodeLen];
+	char code[KyokumenCodeLen];
 	char result[32];
 
 	// first case.
     resetShogiBan(&save_shogi);
 	createKyokumenCode(code, &save_shogi);
-	REQUIRE(strlen(code) == KykumenCodeLen-1);
+	REQUIRE(strlen(code) == KyokumenCodeLen-1);
 
 	setInvalidShogiban(&load_shogi);
 	loadKyokumenFromCode(&load_shogi, code);

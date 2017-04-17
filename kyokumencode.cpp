@@ -163,7 +163,7 @@ void createKyokumenCode(char code[], const  ShogiKykumen *shogi, int rev)
         
     }
     code[codePos] = '\0';
-    assert(codePos == (KykumenCodeLen-1));
+    assert(codePos == (KyokumenCodeLen-1));
 }
 
 void loadKyokumenFromCode(ShogiKykumen *shogi, const char code[])

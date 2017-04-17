@@ -25,11 +25,11 @@ FILE *shg_log = NULL;
 int main(int argc, const char * argv[]) {
     Kifu kifu;
     ShogiKykumen shogi;
-    char code[KykumenCodeLen];
+    char code[KyokumenCodeLen];
     shg_log = fopen("shogidbtool.log", "w");
 
     resetShogiBan(&shogi);
-    if (argc==2 && strlen(argv[1])==(KykumenCodeLen-1)) {
+    if (argc==2 && strlen(argv[1])==(KyokumenCodeLen-1)) {
 		loadKyokumenFromCode(&shogi, argv[1]);
 	}
     Sashite s[200];
@@ -162,7 +162,7 @@ static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
             } else if (buf[0] == 'p') { // print
                 printKyokumen(stdout, shogi);
             } else if (buf[0] == 's') { // show code
-				char code[KykumenCodeLen];
+				char code[KyokumenCodeLen];
 				createKyokumenCode(code, shogi, (buf[1]=='v') ? 1 : 0);
 				printf("%s\n", code);
 			} else if (buf[0] == 'd') { // delete
