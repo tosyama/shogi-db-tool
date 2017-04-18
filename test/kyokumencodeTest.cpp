@@ -6,7 +6,7 @@
 
 using namespace Catch::Matchers;
 
-void setInvalidShogiban(ShogiKykumen *s)
+void setInvalidShogiban(ShogiKyokumen *s)
 {
 	for (int y=0; y<BanY; ++y)
 		for (int x=0; x<BanX; ++x) {
@@ -19,7 +19,7 @@ void setInvalidShogiban(ShogiKykumen *s)
 	s->ou_x = s->ou_y = s->uou_x = s->uou_y = 0xa;
 }
 
-void equalShogiban(char* result, ShogiKykumen *a, ShogiKykumen *b)
+void equalShogiban(char* result, ShogiKyokumen *a, ShogiKyokumen *b)
 {
 	result[0] = 0;
 	for (int y=0; y<BanY; ++y)
@@ -54,8 +54,8 @@ void equalShogiban(char* result, ShogiKykumen *a, ShogiKykumen *b)
 
 TEST_CASE("Kyoumen save/load with code", "[kycode]")
 {
-    ShogiKykumen save_shogi;
-    ShogiKykumen load_shogi;
+    ShogiKyokumen save_shogi;
+    ShogiKyokumen load_shogi;
 
 	char code[KyokumenCodeLen];
 	char result[32];

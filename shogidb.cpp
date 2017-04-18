@@ -133,7 +133,7 @@ void insertShogiDB(const char* filename, Kifu* kifu)
     Sashite *sashite =kifu->sashite;
     assert(sashite[kifu->tesuu].type == SASHITE_RESULT);
     
-    ShogiKykumen shogi;
+    ShogiKyokumen shogi;
     int ky_id = 0;
     int uwate = 0;
     char ky_code[KyokumenCodeLen];

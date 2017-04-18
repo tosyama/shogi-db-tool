@@ -11,7 +11,7 @@
 #include "shogiban.h"
 #include "kyokumencode.h"
 
-void createKyokumenCode(char code[], const  ShogiKykumen *shogi, int rev)
+void createKyokumenCode(char code[], const  ShogiKyokumen *shogi, int rev)
 {
     const Koma (*shogiBan)[BanX] = shogi->shogiBan;
     const int (*komaDai)[DaiN] = shogi->komaDai;
@@ -166,7 +166,7 @@ void createKyokumenCode(char code[], const  ShogiKykumen *shogi, int rev)
     assert(codePos == (KyokumenCodeLen-1));
 }
 
-void loadKyokumenFromCode(ShogiKykumen *shogi, const char code[])
+void loadKyokumenFromCode(ShogiKyokumen *shogi, const char code[])
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;

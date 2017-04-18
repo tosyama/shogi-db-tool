@@ -6,4 +6,4 @@
 //  Copyright (c) 2016 tosyama. All rights reserved.
 //
 
-void createSashiteAll(ShogiKykumen *shogi, Sashite *s, int *n);
+void createSashiteAll(ShogiKyokumen *shogi, Sashite *s, int *n);
