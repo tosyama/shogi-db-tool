@@ -7,10 +7,75 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
 
+void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
+{
+    const Koma (*shogiBan)[BanX] = shogi->shogiBan;
+    const int (*komaDai)[DaiN] = shogi->komaDai;
+    
+    const char banJouCodeTbl[][10] = {
+        "!#$&()*+-","./0123456","789:;<=>?",
+        "@ABCDEFGH","IJKLMNOPQ","RSTUVWXYZ",
+        "_abcdefgh","ijklmnopq","rstuvwxyz"};
+    const int komaDaiCode = '~';
+    const int komaNashiCode = ' ';
+	
+    char *uKomaPos[DaiN] = {NULL};
+    int uKomaNum[DaiN] = {0};
+
+	char *komaPos[DaiN] = {NULL};
+	char codeBuf[39];
+
+	for (int i=0; i<KyokumenCodeLen-1; i++) {
+		code[i] = '^';
+	}
+	code[KyokumenCodeLen-1] = 0;
+
+	uKomaPos[0] = &code[0];
+	uKomaPos[KI] = &code[3]; uKomaPos[GI] = &code[9];
+	uKomaPos[HI] = &code[14]; uKomaPos[KA] = &code[17];
+	uKomaPos[KE] = &code[21]; uKomaPos[KY] = &code[27];
+	uKomaPos[FU] = &code[35];
+
+	komaPos[0] = &codeBuf[0];
+	komaPos[KI] = &codeBuf[1]; komaPos[GI] = &codeBuf[5];
+	komaPos[HI] = &codeBuf[9]; komaPos[KA] = &codeBuf[11];
+	komaPos[KE] = &codeBuf[13]; komaPos[KY] = &codeBuf[17];
+	komaPos[FU] = &codeBuf[21];
+
+	for (int yy=0; yy<BanY; yy+=(BanY/3))
+	for (int xx=0; xx<BanX; xx+=(BanX/3)) {
+		for(int y=yy; y<yy+(BanY/3); y++)
+		for(int x=xx; x<xx+(BanX/3); x++) {
+			Koma k = shogiBan[y][x];
+			if (k!=EMP) {
+				int k_ind = k&KOMATYPE1;
+				char banJouCode = banJouCodeTbl[y][x];
+				if (k & UWATE) {
+					*uKomaPos[k_ind]=banJouCode;
+					uKomaPos[k_ind]++;	
+					uKomaNum[k_ind]++;
+				} else {
+					*komaPos[k_ind]=banJouCode;
+					komaPos[k_ind]++;
+				}
+			}
+		}
+	}
+
+	//OU
+	memcpy(uKomaPos[0],&codeBuf[0],komaPos[0]-&codeBuf[0]);
+
+	memcpy(uKomaPos[KI],&codeBuf[1],komaPos[KI]-&codeBuf[1]);
+	memcpy(uKomaPos[GI],&codeBuf[5],komaPos[GI]-&codeBuf[5]);
+	memcpy(uKomaPos[HI],&codeBuf[9],komaPos[HI]-&codeBuf[9]);
+
+}
+ 
 void createKyokumenCode(char code[], const  ShogiKyokumen *shogi, int rev)
 {
     const Koma (*shogiBan)[BanX] = shogi->shogiBan;

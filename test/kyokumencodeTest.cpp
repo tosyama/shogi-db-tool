@@ -131,4 +131,9 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 
 	equalShogiban(result, &save_shogi, &load_shogi);
 	CHECK_THAT(result, Equals("match"));
+
+	// test
+    resetShogiBan(&save_shogi);
+	createAreaKyokumenCode(code, &save_shogi);
+	printf("code: %s\n", code);
 }
