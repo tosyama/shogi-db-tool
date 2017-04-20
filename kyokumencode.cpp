@@ -12,6 +12,11 @@
 #include "shogiban.h"
 #include "kyokumencode.h"
 
+inline char i2kychar(int i)
+{
+	return (i < 10) ? (i + '0') : ((i < 36) ? (i-10+'A') : (i-36+'a'));
+}
+
 void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
 {
     const Koma (*shogiBan)[BanX] = shogi->shogiBan;
@@ -73,7 +78,16 @@ void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
 	memcpy(uKomaPos[KI],&codeBuf[1],komaPos[KI]-&codeBuf[1]);
 	memcpy(uKomaPos[GI],&codeBuf[5],komaPos[GI]-&codeBuf[5]);
 	memcpy(uKomaPos[HI],&codeBuf[9],komaPos[HI]-&codeBuf[9]);
+	memcpy(uKomaPos[KA],&codeBuf[11],komaPos[KA]-&codeBuf[11]);
+	memcpy(uKomaPos[KE],&codeBuf[13],komaPos[KE]-&codeBuf[13]);
+	memcpy(uKomaPos[KY],&codeBuf[17],komaPos[KY]-&codeBuf[17]);
+	memcpy(uKomaPos[FU],&codeBuf[21],komaPos[FU]-&codeBuf[21]);
 
+	code[2]=i2kychar(uKomaNum[KI]);
+	code[7]=i2kychar(uKomaNum[GI]);
+	code[19]=i2kychar(uKomaNum[KE]);
+	code[25]=i2kychar(uKomaNum[KY]);
+	code[31]=i2kychar(uKomaNum[FU]);
 }
  
 void createKyokumenCode(char code[], const  ShogiKyokumen *shogi, int rev)
