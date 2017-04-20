@@ -1,5 +1,4 @@
-//
-//  kyokumencode.cpp
+////  kyokumencode.cpp
 //  ShogiDBTool
 //
 //  Created by tosyama on 2014/12/28.
@@ -34,9 +33,13 @@ void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
 
 	char *komaPos[DaiN] = {NULL};
 	char codeBuf[39];
+    int komaNum[DaiN] = {0};
+
+	unsigned int nariInfo[DaiN] = {0};
+	unsigned int nariBuf[DaiN] = {0};
 
 	for (int i=0; i<KyokumenCodeLen-1; i++) {
-		code[i] = '^';
+		code[i] = komaNashiCode;
 	}
 	code[KyokumenCodeLen-1] = 0;
 
@@ -63,31 +66,62 @@ void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
 				if (k & UWATE) {
 					*uKomaPos[k_ind]=banJouCode;
 					uKomaPos[k_ind]++;	
+					if (k & NARI) nariInfo[k_ind]|=(1<<uKomaNum[k_ind]);
 					uKomaNum[k_ind]++;
 				} else {
 					*komaPos[k_ind]=banJouCode;
 					komaPos[k_ind]++;
+					if (k & NARI) nariBuf[k_ind]|=(1<<komaNum[k_ind]);
+					komaNum[k_ind]++;
 				}
 			}
 		}
 	}
 
-	//OU
-	memcpy(uKomaPos[0],&codeBuf[0],komaPos[0]-&codeBuf[0]);
+	for(int k_ind=0; k_ind<DaiN; k_ind++) {
+		int n=komaDai[1][k_ind];
+		for (int i=0; i<n; i++) {
+			*uKomaPos[k_ind] = komaDaiCode;
+			uKomaPos[k_ind]++;
+			uKomaNum[k_ind]++;
+		}
+		n=komaDai[0][k_ind];
+		for (int i=0; i<n; i++) {
+			*komaPos[k_ind] = komaDaiCode;
+			komaPos[k_ind]++;
+			komaNum[k_ind]++;
+		}
+	}
 
-	memcpy(uKomaPos[KI],&codeBuf[1],komaPos[KI]-&codeBuf[1]);
-	memcpy(uKomaPos[GI],&codeBuf[5],komaPos[GI]-&codeBuf[5]);
-	memcpy(uKomaPos[HI],&codeBuf[9],komaPos[HI]-&codeBuf[9]);
-	memcpy(uKomaPos[KA],&codeBuf[11],komaPos[KA]-&codeBuf[11]);
-	memcpy(uKomaPos[KE],&codeBuf[13],komaPos[KE]-&codeBuf[13]);
-	memcpy(uKomaPos[KY],&codeBuf[17],komaPos[KY]-&codeBuf[17]);
-	memcpy(uKomaPos[FU],&codeBuf[21],komaPos[FU]-&codeBuf[21]);
+	memcpy(uKomaPos[0],&codeBuf[0],komaPos[0]-&codeBuf[0]);
+	memcpy(uKomaPos[KI],&codeBuf[1],komaNum[KI]);
+	memcpy(uKomaPos[GI],&codeBuf[5],komaNum[GI]);
+	memcpy(uKomaPos[HI],&codeBuf[9],komaNum[HI]);
+	memcpy(uKomaPos[KA],&codeBuf[11],komaNum[KA]);
+	memcpy(uKomaPos[KE],&codeBuf[13],komaNum[KE]);
+	memcpy(uKomaPos[KY],&codeBuf[17],komaNum[KY]);
+	memcpy(uKomaPos[FU],&codeBuf[21],komaNum[FU]);
+
+	nariInfo[FU]|=(nariBuf[FU]<<uKomaNum[FU]);
+	nariInfo[KY]|=(nariBuf[KY]<<uKomaNum[KY]);
+	nariInfo[KE]|=(nariBuf[KE]<<uKomaNum[KE]);
+	nariInfo[GI]|=(nariBuf[GI]<<uKomaNum[GI]);
+	nariInfo[KA]|=(nariBuf[KA]<<uKomaNum[KA]);
+	nariInfo[HI]|=(nariBuf[HI]<<uKomaNum[HI]);
 
 	code[2]=i2kychar(uKomaNum[KI]);
 	code[7]=i2kychar(uKomaNum[GI]);
+	code[8]=i2kychar(nariInfo[GI]);
+	code[13]=i2kychar((nariInfo[HI]<<2)|uKomaNum[HI]);
+	code[16]=i2kychar((nariInfo[KA]<<2)|uKomaNum[KA]);
 	code[19]=i2kychar(uKomaNum[KE]);
+	code[20]=i2kychar(nariInfo[KE]);
 	code[25]=i2kychar(uKomaNum[KY]);
+	code[26]=i2kychar(nariInfo[KY]);
 	code[31]=i2kychar(uKomaNum[FU]);
+	code[32]=i2kychar(0x3F&nariInfo[FU]);
+	code[33]=i2kychar(0x3F&(nariInfo[FU]>>6));
+	code[34]=i2kychar(nariInfo[FU]>>12);
 }
  
 void createKyokumenCode(char code[], const  ShogiKyokumen *shogi, int rev)
