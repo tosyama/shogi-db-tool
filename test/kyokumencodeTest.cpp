@@ -52,6 +52,87 @@ void equalShogiban(char* result, ShogiKyokumen *a, ShogiKyokumen *b)
 	sprintf(result, "match");
 }
 
+TEST_CASE("Kyoumen save/load with code order by 9area", "[kycode]")
+{
+    ShogiKyokumen save_shogi;
+    ShogiKyokumen load_shogi;
+
+	char code[KyokumenCodeLen];
+	char result[32];
+
+	// first case.
+    resetShogiBan(&save_shogi);
+	createAreaKyokumenCode(code, &save_shogi);
+	REQUIRE(strlen(code) == KyokumenCodeLen-1);
+
+	setInvalidShogiban(&load_shogi);
+	loadKyokumenFromCode(&load_shogi, code);
+
+	equalShogiban(result, &save_shogi, &load_shogi);
+	CHECK_THAT(result, Equals("match"));
+
+	// noKoma
+    resetShogiBan(&save_shogi);
+	for (int y=0; y<BanY; ++y)
+		for (int x=0; x<BanX; ++x) {
+			save_shogi.shogiBan[y][x] = EMP;
+		}
+	save_shogi.ou_x = save_shogi.ou_y = NonPos;
+	save_shogi.uou_x = save_shogi.uou_y = NonPos;
+
+	createAreaKyokumenCode(code, &save_shogi);
+
+	setInvalidShogiban(&load_shogi);
+	loadKyokumenFromCode(&load_shogi, code);
+
+	equalShogiban(result, &save_shogi, &load_shogi);
+	CHECK_THAT(result, Equals("match"));
+
+	// tegoma only
+	save_shogi.komaDai[0][0]=1;
+	save_shogi.komaDai[0][FU]=18;
+	save_shogi.komaDai[0][KY]=4;
+	save_shogi.komaDai[0][KE]=4;
+	save_shogi.komaDai[0][GI]=4;
+	save_shogi.komaDai[0][KI]=4;
+	save_shogi.komaDai[0][KA]=2;
+	save_shogi.komaDai[0][HI]=2;
+
+	createAreaKyokumenCode(code, &save_shogi);
+
+	setInvalidShogiban(&load_shogi);
+	loadKyokumenFromCode(&load_shogi, code);
+
+	equalShogiban(result, &save_shogi, &load_shogi);
+	CHECK_THAT(result, Equals("match"));
+
+	save_shogi.komaDai[0][0]=0;
+	save_shogi.komaDai[0][FU]=0;
+	save_shogi.komaDai[0][KY]=0;
+	save_shogi.komaDai[0][KE]=0;
+	save_shogi.komaDai[0][GI]=0;
+	save_shogi.komaDai[0][KI]=0;
+	save_shogi.komaDai[0][KA]=0;
+	save_shogi.komaDai[0][HI]=0;
+
+	save_shogi.komaDai[1][0]=1;
+	save_shogi.komaDai[1][FU]=18;
+	save_shogi.komaDai[1][KY]=4;
+	save_shogi.komaDai[1][KE]=4;
+	save_shogi.komaDai[1][GI]=4;
+	save_shogi.komaDai[1][KI]=4;
+	save_shogi.komaDai[1][KA]=2;
+	save_shogi.komaDai[1][HI]=2;
+
+	createAreaKyokumenCode(code, &save_shogi);
+
+	setInvalidShogiban(&load_shogi);
+	loadKyokumenFromCode(&load_shogi, code);
+
+	equalShogiban(result, &save_shogi, &load_shogi);
+	CHECK_THAT(result, Equals("match"));
+}
+
 TEST_CASE("Kyoumen save/load with code", "[kycode]")
 {
     ShogiKyokumen save_shogi;
@@ -131,9 +212,4 @@ TEST_CASE("Kyoumen save/load with code", "[kycode]")
 
 	equalShogiban(result, &save_shogi, &load_shogi);
 	CHECK_THAT(result, Equals("match"));
-
-	// test
-    resetShogiBan(&save_shogi);
-	createAreaKyokumenCode(code, &save_shogi);
-	printf("code: %s\n", code);
 }

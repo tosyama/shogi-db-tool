@@ -93,7 +93,7 @@ void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi)
 		}
 	}
 
-	memcpy(uKomaPos[0],&codeBuf[0],komaPos[0]-&codeBuf[0]);
+	memcpy(&code[1],&codeBuf[0],komaNum[0]);
 	memcpy(uKomaPos[KI],&codeBuf[1],komaNum[KI]);
 	memcpy(uKomaPos[GI],&codeBuf[5],komaNum[GI]);
 	memcpy(uKomaPos[HI],&codeBuf[9],komaNum[HI]);
