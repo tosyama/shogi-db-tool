@@ -71,6 +71,24 @@ TEST_CASE("Kyoumen save/load with code order by 9area", "[kycode]")
 	equalShogiban(result, &save_shogi, &load_shogi);
 	CHECK_THAT(result, Equals("match"));
 
+	// nari case.
+    resetShogiBan(&save_shogi);
+	save_shogi.shogiBan[0][0] = UNKY;	
+	save_shogi.shogiBan[0][7] = UNKE;	
+	save_shogi.shogiBan[8][1] = NKE;	
+	save_shogi.shogiBan[8][8] = NKY;	
+	save_shogi.shogiBan[1][1] = URYU;	
+	save_shogi.shogiBan[7][1] = UMA;	
+	save_shogi.shogiBan[0][2] = EMP;
+	save_shogi.shogiBan[8][2] = UGI;
+	createAreaKyokumenCode(code, &save_shogi);
+
+	setInvalidShogiban(&load_shogi);
+	loadKyokumenFromCode(&load_shogi, code);
+
+	equalShogiban(result, &save_shogi, &load_shogi);
+	CHECK_THAT(result, Equals("match"));
+
 	// noKoma
     resetShogiBan(&save_shogi);
 	for (int y=0; y<BanY; ++y)
