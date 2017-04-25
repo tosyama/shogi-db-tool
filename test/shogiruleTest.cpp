@@ -7,7 +7,7 @@
 
 TEST_CASE("Create all sashite.", "[rule]")
 {
-    ShogiKykumen shogi;
+    ShogiKyokumen shogi;
     resetShogiBan(&shogi);
     Sashite s[600];
     int n;

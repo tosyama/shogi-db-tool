@@ -17,14 +17,14 @@
 #include "shogidb.h"
 #include "shogirule.h"
 
-static int interactiveCUI(ShogiKykumen *shogi, Sashite *s);
+static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s);
 
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
     Kifu kifu;
-    ShogiKykumen shogi;
+    ShogiKyokumen shogi;
     char code[KyokumenCodeLen];
     shg_log = fopen("shogidbtool.log", "w");
 
@@ -99,7 +99,7 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-static int interactiveCUI(ShogiKykumen *shogi, Sashite *s)
+static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
 	int (*komaDai)[DaiN] = shogi->komaDai;

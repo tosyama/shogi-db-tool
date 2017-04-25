@@ -143,7 +143,7 @@ Sashite *createSashiteUchi(Sashite *te, Koma k,
 Sashite *createSashiteUchiFU(Sashite *te, Koma (*shogiBan)[BanX],
 		unsigned int usedLine, int oute_num, BitBoard9x9 *outePosKikiB); 
 // 手の生成
-void createSashiteAll(ShogiKykumen *shogi, Sashite *s, int *n)
+void createSashiteAll(ShogiKyokumen *shogi, Sashite *s, int *n)
 {
 	Koma (*shogiBan)[BanX] = shogi->shogiBan;
 	int (*komaDai)[DaiN] = shogi->komaDai;

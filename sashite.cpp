@@ -11,7 +11,7 @@
 #include "shogiban.h"
 #include "sashite.h"
 
-int sasu(ShogiKykumen *shogi, Sashite *s)
+int sasu(ShogiKyokumen *shogi, Sashite *s)
 {
     if (s->type == SASHITE_IDOU) {
         s->idou.torigoma = sashite1(shogi, s->idou.from_x, s->idou.from_y, s->idou.to_x, s->idou.to_y, s->idou.nari);
@@ -29,7 +29,7 @@ int sasu(ShogiKykumen *shogi, Sashite *s)
     return -1;
 }
 
-void temodoshi(ShogiKykumen *shogi, const Sashite *s)
+void temodoshi(ShogiKyokumen *shogi, const Sashite *s)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;

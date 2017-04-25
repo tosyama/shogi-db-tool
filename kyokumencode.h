@@ -8,5 +8,6 @@
 
 #define KyokumenCodeLen  54
 
-void createKyokumenCode(char code[], const ShogiKykumen *shogi, int rev=0);
-void loadKyokumenFromCode(ShogiKykumen *shogi, const char code[]);
+void createAreaKyokumenCode(char code[], const ShogiKyokumen *shogi);
+void createKyokumenCode(char code[], const ShogiKyokumen *shogi, int rev=0);
+void loadKyokumenFromCode(ShogiKyokumen *shogi, const char code[]);

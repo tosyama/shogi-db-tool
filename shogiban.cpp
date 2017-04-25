@@ -6,7 +6,7 @@
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 static char kanSuji[][5] = { "〇","一","二","三","四","五","六","七","八","九"};
 
-void resetShogiBan(ShogiKykumen *shogi)
+void resetShogiBan(ShogiKyokumen *shogi)
 {
     int x, k;
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
@@ -46,7 +46,7 @@ void resetShogiBan(ShogiKykumen *shogi)
     for (k=0;k<DaiN;k++) komaDai[1][k] = 0;
 }
 
-void printKyokumen(FILE *f, ShogiKykumen *shogi)
+void printKyokumen(FILE *f, ShogiKyokumen *shogi)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
@@ -94,7 +94,7 @@ void printKyokumen(FILE *f, ShogiKykumen *shogi)
     fprintf(f, "\n");
 }
 
-Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari)
+Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
@@ -134,7 +134,7 @@ Koma sashite1(ShogiKykumen *shogi, int from_x, int from_y, int to_x, int to_y, i
     return k2;  //手を戻すときに使用するため
 }
 
-void sashite2(ShogiKykumen *shogi, int uwate, Koma koma, int to_x, int to_y)
+void sashite2(ShogiKyokumen *shogi, int uwate, Koma koma, int to_x, int to_y)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
