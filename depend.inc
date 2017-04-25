@@ -1,5 +1,6 @@
 main.o: shogiban.h kyokumencode.h sashite.h kifu.h shogidb.h \
  shogirule.h
+shogigame.o: shogiban.h shogigame.h
 shogiban.o: shogiban.h
 kyokumencode.o: shogiban.h kyokumencode.h
 sashite.o: shogiban.h sashite.h
