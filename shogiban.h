@@ -73,6 +73,7 @@ extern FILE *shg_log;
 
 void resetShogiBan(ShogiKyokumen *shogi);
 void printKyokumen(FILE *f, ShogiKyokumen *shogi);
+void copyKyokumenInversely(ShogiKyokumen *dst, const ShogiKyokumen *src);
 
 Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, int nari);
 void sashite2(ShogiKyokumen *shogi, int uwate, Koma koma, int to_x, int to_y);

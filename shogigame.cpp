@@ -2,58 +2,84 @@
 #include <string.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
+#include "sashite.h"
+#include "shogirule.h"
 #include "shogigame.h"
 
-class  ShogiGame::ShogiGameData {
+const int U_TEBAN=1;
+const int S_TEBAN=0;
+const int FREE_TEBAN=-1;
+
+class  ShogiGame::ShogiGameImpl {
 public:
 	ShogiKyokumen shitate;
 	ShogiKyokumen uwate;
 	int teban; // 0: shitate, 1: uwate, -1: free
-};
+	int teNum;
+	Sashite legalTe[MAX_LEGAL_SASHITE];
+	
+	void createLegalTe() {
+		if(teban == S_TEBAN)
+			createSashiteAll(&shitate, legalTe, &teNum);
+		else if(teban == U_TEBAN)
+			createSashiteAll(&uwate, legalTe, &teNum);
+		else 
+			teNum = 0;
+	}
 
-void copyKyokumenInversely(ShogiKyokumen *dst, const ShogiKyokumen *src)
-{
-	Koma *dk = dst->shogiBan[0];
-	const Koma *src_ban = src->shogiBan[0];
-	const Koma *sk = src_ban + (BanY*BanX);
-
-	for (; sk>=src_ban; dk++, sk--) {
-		Koma k=*sk;
-		if (k != EMP) {
-			*dk =static_cast<Koma>(k & UWATE ? k & KOMATYPE2 : k | UWATE);
+	void init(const char *kycode) {
+		if(kycode) {
+			teban = kycode[KyokumenCodeLen] < 'u'? S_TEBAN:U_TEBAN;
+			if (teban == S_TEBAN) {
+				loadKyokumenFromCode(&shitate, kycode);
+				copyKyokumenInversely(&uwate, &shitate);
+			} else {
+				loadKyokumenFromCode(&uwate, kycode);
+				copyKyokumenInversely(&shitate, &uwate);
+			}
+			// TODO: legal check.
 		} else {
-			*dk = EMP;
+			resetShogiBan(&shitate);
+			uwate = shitate;
+			teban = S_TEBAN;
 		}
+		createLegalTe();
 	}
 
-	memcpy(dst->komaDai[0],src->komaDai[1],sizeof(dst->komaDai[0]));
-	memcpy(dst->komaDai[1],src->komaDai[0],sizeof(dst->komaDai[0]));
-
-	if (src->ou_x != NonPos) {
-		dst->uou_x = BanX - src->ou_x;
-		dst->uou_y = BanY - src->ou_y;
-	} else {
-		dst->uou_x = dst->uou_y = NonPos;
+	int move(int from_x, int from_y, int to_x, int to_y, bool promote)
+	{
+		Sashite te;
+		te.type = SASHITE_IDOU;
+		te.idou.from_x = INNER_X(from_x);
+		te.idou.from_y = INNER_Y(from_y);
+		te.idou.to_x = INNER_X(to_x);
+		te.idou.to_y = INNER_Y(to_y);
+		Sashite rte;
+		rte.type = SASHITE_IDOU;
+		rte.idou.from_x = BanX-INNER_X(from_x);
+		rte.idou.from_y = BanY-INNER_Y(from_y);
+		rte.idou.to_x = BanX-INNER_X(to_x);
+		rte.idou.to_y = BanY-INNER_Y(to_y);
+		sasu(&shitate,&te);
+		sasu(&uwate,&rte);
+		if (teban == S_TEBAN) teban= U_TEBAN;
+		else if (teban == U_TEBAN) teban = S_TEBAN;
+		return 0;
 	}
-
-	if (src->uou_x != NonPos) {
-		dst->ou_x = BanX - src->uou_x;
-		dst->ou_y = BanY - src->uou_y;
-	} else {
-		dst->ou_x = dst->ou_y = NonPos;
-	}
-}
+};
 
 ShogiGame::ShogiGame(const char *kycode)
 {
-	shg = new ShogiGameData();
-	if(kycode) {
-		loadKyokumenFromCode(&shg->shitate, kycode);
-		copyKyokumenInversely(&shg->uwate, &shg->shitate);
-		shg->teban = kycode[KyokumenCodeLen] < 'u'? 0:1;
-	} else {
-		resetShogiBan(&shg->shitate);
-		shg->uwate = shg->shitate;
-		shg->teban = 0;
-	}
+	shg = new ShogiGameImpl();
+	shg->init(kycode);
+}
+
+int ShogiGame::move(int from_x, int from_y, int to_x, int to_y, bool promote)
+{
+	return shg->move(from_x, from_y, to_x, to_y, promote);
+}
+
+void ShogiGame::print(bool reverse)
+{
+	printKyokumen(stdout, &shg->shitate);
 }

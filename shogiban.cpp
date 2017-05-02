@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "shogiban.h"
@@ -45,6 +46,40 @@ void resetShogiBan(ShogiKyokumen *shogi)
     for (k=0;k<DaiN;k++) komaDai[0][k] = 0;
     for (k=0;k<DaiN;k++) komaDai[1][k] = 0;
 }
+
+void copyKyokumenInversely(ShogiKyokumen *dst, const ShogiKyokumen *src)
+{
+	Koma *dk = dst->shogiBan[0];
+	const Koma *src_ban = src->shogiBan[0];
+	const Koma *sk = src_ban + (BanY*BanX);
+
+	for (; sk>=src_ban; dk++, sk--) {
+		Koma k=*sk;
+		if (k != EMP) {
+			*dk =static_cast<Koma>(k & UWATE ? k & KOMATYPE2 : k | UWATE);
+		} else {
+			*dk = EMP;
+		}
+	}
+
+	memcpy(dst->komaDai[0],src->komaDai[1],sizeof(dst->komaDai[0]));
+	memcpy(dst->komaDai[1],src->komaDai[0],sizeof(dst->komaDai[0]));
+
+	if (src->ou_x != NonPos) {
+		dst->uou_x = BanX - src->ou_x;
+		dst->uou_y = BanY - src->ou_y;
+	} else {
+		dst->uou_x = dst->uou_y = NonPos;
+	}
+
+	if (src->uou_x != NonPos) {
+		dst->ou_x = BanX - src->uou_x;
+		dst->ou_y = BanY - src->uou_y;
+	} else {
+		dst->ou_x = dst->ou_y = NonPos;
+	}
+}
+
 
 void printKyokumen(FILE *f, ShogiKyokumen *shogi)
 {
