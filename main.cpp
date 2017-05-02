@@ -17,12 +17,18 @@
 #include "shogidb.h"
 #include "shogirule.h"
 
+#include "shogigame.h"
 static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s);
 
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
+	ShogiGame shg;
+	shg.move(2,7,2,6,false);
+	shg.print(1);
+	return 0;
+
     Kifu kifu;
     ShogiKyokumen shogi;
     char code[KyokumenCodeLen];

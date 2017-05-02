@@ -54,12 +54,14 @@ public:
 		te.idou.from_y = INNER_Y(from_y);
 		te.idou.to_x = INNER_X(to_x);
 		te.idou.to_y = INNER_Y(to_y);
+		te.idou.nari = promote;
 		Sashite rte;
 		rte.type = SASHITE_IDOU;
-		rte.idou.from_x = BanX-INNER_X(from_x);
-		rte.idou.from_y = BanY-INNER_Y(from_y);
-		rte.idou.to_x = BanX-INNER_X(to_x);
-		rte.idou.to_y = BanY-INNER_Y(to_y);
+		rte.idou.from_x = BanX-1-INNER_X(from_x);
+		rte.idou.from_y = BanY-1-INNER_Y(from_y);
+		rte.idou.to_x = BanX-1-INNER_X(to_x);
+		rte.idou.to_y = BanY-1-INNER_Y(to_y);
+		rte.idou.nari = promote;
 		sasu(&shitate,&te);
 		sasu(&uwate,&rte);
 		if (teban == S_TEBAN) teban= U_TEBAN;
@@ -81,5 +83,8 @@ int ShogiGame::move(int from_x, int from_y, int to_x, int to_y, bool promote)
 
 void ShogiGame::print(bool reverse)
 {
-	printKyokumen(stdout, &shg->shitate);
+	if (reverse)
+		printKyokumen(stdout, &shg->uwate);
+	else
+		printKyokumen(stdout, &shg->shitate);
 }
