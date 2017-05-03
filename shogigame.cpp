@@ -68,6 +68,26 @@ public:
 		else if (teban == U_TEBAN) teban = S_TEBAN;
 		return 0;
 	}
+	int drop(int teban, int koma, int to_x, int to_y)
+	{
+		Sashite te;
+		te.type = SASHITE_UCHI;
+		te.uchi.uwate = teban;
+		te.uchi.koma = koma;
+		te.uchi.to_x = INNER_X(to_x);
+		te.uchi.to_y = INNER_Y(to_y);
+		Sashite rte;
+		rte.type = SASHITE_UCHI;
+		rte.uchi.uwate = teban;
+		rte.uchi.koma = koma;
+		rte.uchi.to_x = BanX-1-INNER_X(to_x);
+		rte.uchi.to_y = BanY-1-INNER_Y(to_y);
+		sasu(&shitate,&te);
+		sasu(&uwate,&rte);
+		if (teban == S_TEBAN) teban= U_TEBAN;
+		else if (teban == U_TEBAN) teban = S_TEBAN;
+		return 0;
+	}
 };
 
 ShogiGame::ShogiGame(const char *kycode)
@@ -76,12 +96,27 @@ ShogiGame::ShogiGame(const char *kycode)
 	shg->init(kycode);
 }
 
+int ShogiGame::board(int x, int y) const
+{
+	return shg->shitate.shogiBan[INNER_Y(y)][INNER_X(x)];
+}
+
+int ShogiGame::tegoma(int teban, int koma) const
+{
+	return shg->shitate.komaDai[teban][koma];
+}
+
 int ShogiGame::move(int from_x, int from_y, int to_x, int to_y, bool promote)
 {
 	return shg->move(from_x, from_y, to_x, to_y, promote);
 }
 
-void ShogiGame::print(bool reverse)
+int ShogiGame::drop(int teban, int koma, int to_x, int to_y)
+{
+	return shg->drop(teban, koma, to_x, to_y);
+}
+
+void ShogiGame::print(bool reverse) const
 {
 	if (reverse)
 		printKyokumen(stdout, &shg->uwate);
