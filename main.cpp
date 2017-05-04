@@ -25,8 +25,10 @@ FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
 	ShogiGame shg;
+	printf("%s\n", shg.currentKyCode());
 	shg.move(2,7,2,6,false);
 	shg.print(1);
+	printf("%s\n", shg.currentKyCode());
 	return 0;
 
     Kifu kifu;

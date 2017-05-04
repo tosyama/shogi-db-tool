@@ -17,6 +17,7 @@ public:
 	int teban; // 0: shitate, 1: uwate, -1: free
 	int teNum;
 	Sashite legalTe[MAX_LEGAL_SASHITE];
+	char kycode[KyokumenCodeLen+1];
 	
 	void createLegalTe() {
 		if(teban == S_TEBAN)
@@ -68,6 +69,7 @@ public:
 		else if (teban == U_TEBAN) teban = S_TEBAN;
 		return 0;
 	}
+
 	int drop(int teban, int koma, int to_x, int to_y)
 	{
 		Sashite te;
@@ -87,6 +89,17 @@ public:
 		if (teban == S_TEBAN) teban= U_TEBAN;
 		else if (teban == U_TEBAN) teban = S_TEBAN;
 		return 0;
+	}
+
+	char *currentKyCode()
+	{
+		if (teban==U_TEBAN) {
+			createAreaKyokumenCode(kycode, &uwate);
+			kycode[KyokumenCodeLen-1]='u';
+			kycode[KyokumenCodeLen]='\0';
+		} else
+			createAreaKyokumenCode(kycode, &shitate);
+		return kycode;
 	}
 };
 
@@ -122,4 +135,9 @@ void ShogiGame::print(bool reverse) const
 		printKyokumen(stdout, &shg->uwate);
 	else
 		printKyokumen(stdout, &shg->shitate);
+}
+
+char* ShogiGame::currentKyCode() const
+{
+	return shg->currentKyCode();
 }
