@@ -80,60 +80,60 @@ int readKIF(const char *filename, Kifu *kifu)
                 assert(buf[17]=='/');
                 kifu->date[6] = buf[18];kifu->date[7] = buf[19];
                 kifu->date[8] = '\0';
-                printf("%s ",kifu->date);
+                // printf("%s ",kifu->date);
                 
             } else if (buf[0]=='\x8A' && buf[4]=='\x81') { // 棋(8AFA)戦:
                 char *kisen_str = &buf[6];
                 chomp(kisen_str);
                 if (strcmp(kisen_str, "\x96\xbc\x90\x6c\x90\xed") == 0) { // 名人戦
                     kifu->kisen = KISEN_MEIJIN;
-                    printf("名人戦 ");
+                    // printf("名人戦 ");
                 } else if(strstr(kisen_str, "\x97\xb3\x89\xa4\x90\xed")) { //竜王戦
                     kifu->kisen = KISEN_RYUOU;
-                    printf("竜王戦 ");
+                    // printf("竜王戦 ");
                 } else if(strstr(kisen_str,"\x8a\xfb\x90\xb9\x90\xed")) { // 棋聖戦
                     kifu->kisen = KISEN_KISEI;
-                    printf("棋聖戦 ");
+                    // printf("棋聖戦 ");
                 } else if(strstr(kisen_str,"\x89\xa4\x88\xca\x90\xed")) { // 王位戦
                     kifu->kisen = KISEN_OUI;
-                    printf("王位戦 ");
+                    // printf("王位戦 ");
                 } else if(strstr(kisen_str,"\x89\xa4\x8d\xc0\x90\xed")) { // 王座戦
                     kifu->kisen = KISEN_OUZA;
-                    printf("王座戦 ");
+                    // printf("王座戦 ");
                 } else if(strstr(kisen_str,"\x8a\xfb\x89\xa4\x90\xed")) { // 棋王戦
                     kifu->kisen = KISEN_KIOU;
-                    printf("棋王戦 ");
+                    // printf("棋王戦 ");
                 } else if(strstr(kisen_str,"\x89\xa4\x8f\xab\x90\xed")) { // 王将戦
                     kifu->kisen = KISEN_OUSHOU;
-                    printf("王将戦 ");
+                    // printf("王将戦 ");
                 } else if(strstr(kisen_str,"\x8f\x87\x88\xca\x90\xed")) { // 順位戦
                     kifu->kisen = KISEN_JUNI;
-                    printf("順位戦 ");
+                    // printf("順位戦 ");
                 } else if(strstr(kisen_str,"\x82\x6d\x82\x67\x82\x6a\x94\x74")) { // NHK杯
                     kifu->kisen = KISEN_NHK;
-                    printf("NHK杯 ");
+                    // printf("NHK杯 ");
                 } else if(strcmp(kisen_str,"\x8b\xe2\x89\xcd\x90\xed")) { // 銀河戦
                     kifu->kisen = KISEN_NHK;
-                    printf("銀河戦 ");
+                    // printf("銀河戦 ");
                 } else if(strcmp(kisen_str,"\x8f\x5c\x92\x69\x90\xed")) { // 十段戦
                     kifu->kisen = KISEN_JUUDAN;
-                    printf("十段戦 ");
+                    // printf("十段戦 ");
                 } else if(strcmp(kisen_str,"\x8b\xe3\x92\x69\x90\xed")) { // 九段戦
                     kifu->kisen = KISEN_JUUDAN;
-                    printf("九段戦 ");
+                    // printf("九段戦 ");
                 } else {
                     kifu->kisen = KISEN_SONOTA;
-                    printf("その他の棋戦 ");
+                    // printf("その他の棋戦 ");
                 }
             } else if (buf[0]=='\x8E' && buf[6]=='\x81') { // 手(8EE8)合割:
                 // 基本　平(95BD)手
                 assert(buf[8]=='\x95' && buf[9]=='\xBD');
             } else if (buf[0]=='\x8C' && buf[4]=='\x81') { // 後(8CE3)手:
                 sjis2utf8(kifu->gote, chomp(&buf[6]), KishiNameLen);
-                printf("%s ", kifu->gote);
+                // printf("%s ", kifu->gote);
             } else if (buf[0]=='\x90' && buf[1]=='\xE6' && buf[4]=='\x81') { // 先(90E6)手:
                 sjis2utf8(kifu->sente, chomp(&buf[6]), KishiNameLen);
-                printf("%s ", kifu->sente);
+                // printf("%s ", kifu->sente);
             }
         }
         
@@ -257,7 +257,7 @@ int readKIF(const char *filename, Kifu *kifu)
         }
     }
     sashite[i].type = SASHITE_EMP;
-	printf("\n");
+//	printf("\n");
     fclose(f);
     
     return kifu->tesuu;

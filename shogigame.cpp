@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
+#include "kifu.h"
 #include "shogirule.h"
 #include "shogigame.h"
 
@@ -18,6 +20,7 @@ public:
 	int teNum;
 	Sashite legalTe[MAX_LEGAL_SASHITE];
 	char kycode[KyokumenCodeLen+1];
+	std::vector<Sashite> kifu;
 	
 	void createLegalTe() {
 		if(teban == S_TEBAN)
@@ -44,7 +47,41 @@ public:
 			uwate = shitate;
 			teban = S_TEBAN;
 		}
+		kifu.resize(0);
 		createLegalTe();
+	}
+
+	int load(const char* kif_fname)
+	{
+		Kifu kif;
+		readKIF(kif_fname, &kif);
+		init(NULL);
+		kifu.reserve(kif.tesuu);
+		for (int i=0; i<kif.tesuu; ++i)
+			kifu.push_back(kif.sashite[i]);
+		return SG_SUCCESS;
+	}
+
+	void sasu(Sashite te) {
+		Sashite rte;
+		if (te.type == SASHITE_IDOU) {
+			rte.type = SASHITE_IDOU;
+			rte.idou.from_x = BanX-1-te.idou.from_x;
+			rte.idou.from_y = BanY-1-te.idou.from_y;
+			rte.idou.to_x = BanX-1-te.idou.to_x;
+			rte.idou.to_y = BanY-1-te.idou.to_y;
+			rte.idou.nari = te.idou.nari;
+		} else if (te.type == SASHITE_UCHI) {
+			rte.type = SASHITE_UCHI;
+			rte.uchi.uwate = !te.uchi.uwate;
+			rte.uchi.koma = te.uchi.koma;
+			rte.uchi.to_x = BanX-1-te.uchi.to_x;
+			rte.uchi.to_y = BanY-1-te.uchi.to_y;
+		}
+		::sasu(&shitate,&te);
+		::sasu(&uwate,&rte);
+		if (teban == S_TEBAN) teban= U_TEBAN;
+		else if (teban == U_TEBAN) teban = S_TEBAN;
 	}
 
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote)
@@ -56,18 +93,8 @@ public:
 		te.idou.to_x = INNER_X(to_x);
 		te.idou.to_y = INNER_Y(to_y);
 		te.idou.nari = promote;
-		Sashite rte;
-		rte.type = SASHITE_IDOU;
-		rte.idou.from_x = BanX-1-INNER_X(from_x);
-		rte.idou.from_y = BanY-1-INNER_Y(from_y);
-		rte.idou.to_x = BanX-1-INNER_X(to_x);
-		rte.idou.to_y = BanY-1-INNER_Y(to_y);
-		rte.idou.nari = promote;
-		sasu(&shitate,&te);
-		sasu(&uwate,&rte);
-		if (teban == S_TEBAN) teban= U_TEBAN;
-		else if (teban == U_TEBAN) teban = S_TEBAN;
-		return 0;
+		sasu(te);
+		return SG_SUCCESS;
 	}
 
 	int drop(int teban, int koma, int to_x, int to_y)
@@ -78,17 +105,8 @@ public:
 		te.uchi.koma = koma;
 		te.uchi.to_x = INNER_X(to_x);
 		te.uchi.to_y = INNER_Y(to_y);
-		Sashite rte;
-		rte.type = SASHITE_UCHI;
-		rte.uchi.uwate = teban;
-		rte.uchi.koma = koma;
-		rte.uchi.to_x = BanX-1-INNER_X(to_x);
-		rte.uchi.to_y = BanY-1-INNER_Y(to_y);
-		sasu(&shitate,&te);
-		sasu(&uwate,&rte);
-		if (teban == S_TEBAN) teban= U_TEBAN;
-		else if (teban == U_TEBAN) teban = S_TEBAN;
-		return 0;
+		sasu(te);
+		return SG_SUCCESS;
 	}
 
 	char *currentKyCode()
@@ -107,6 +125,11 @@ ShogiGame::ShogiGame(const char *kycode)
 {
 	shg = new ShogiGameImpl();
 	shg->init(kycode);
+}
+
+int ShogiGame::load(const char* kif_fname)
+{
+	return shg->load(kif_fname);
 }
 
 int ShogiGame::board(int x, int y) const
