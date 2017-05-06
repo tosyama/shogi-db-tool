@@ -24,6 +24,9 @@ public:
 	
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote);
 	int drop(int teban, int koma, int to_x, int to_y);
+	
+	int next();
+	int previous();
 
 	void print(bool reverse=false) const;
 	char* currentKyCode() const;
