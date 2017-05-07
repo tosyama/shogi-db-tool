@@ -27,6 +27,7 @@ public:
 	
 	int next();
 	int previous();
+	int go(int teme);
 
 	void print(bool reverse=false) const;
 	char* currentKyCode() const;

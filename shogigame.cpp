@@ -142,6 +142,19 @@ public:
 		return curIndex;
 	}
 
+	int go(int teme) {
+		if (curIndex > teme) {
+			if (teme < 0) teme = 0;
+			do previous();
+			while (curIndex != teme);
+		} else if (curIndex < teme) {
+			if (teme > kifu.size()) teme = kifu.size();
+			do next();
+			while (curIndex != teme);
+		}
+		return curIndex;
+	}
+
 	char *currentKyCode()
 	{
 		if (teban==U_TEBAN) {
@@ -194,6 +207,12 @@ int ShogiGame::previous()
 {
 	return shg->previous();
 }
+
+int ShogiGame::go(int teme)
+{
+	return shg->go(teme);
+}
+
 void ShogiGame::print(bool reverse) const
 {
 	if (reverse)
