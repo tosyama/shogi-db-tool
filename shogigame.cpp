@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <vector>
 #include <string>
 #include "shogiban.h"
@@ -25,7 +26,7 @@ class  ShogiGame::ShogiGameImpl {
 			rte.idou.to_x = revX(te.idou.to_x);
 			rte.idou.to_y = revY(te.idou.to_y);
 			rte.idou.nari = te.idou.nari;
-			rte.idou.torigoma = te.idou.torigoma;
+			rte.idou.torigoma = te.idou.torigoma ? te.idou.torigoma ^ UWATE : 0;
 		} else if (te.type == SASHITE_UCHI) {
 			rte.type = SASHITE_UCHI;
 			rte.uchi.uwate = !te.uchi.uwate;
@@ -36,6 +37,7 @@ class  ShogiGame::ShogiGameImpl {
 		return rte;
 	}
 public:
+	std::string gameDate;
 	std::string sName;
 	std::string uName;
 	ShogiKyokumen shitate;
@@ -75,6 +77,11 @@ public:
 			uwate = shitate;
 			teban = S_TEBAN;
 		}
+		time_t now = time(NULL);
+		struct tm* today = localtime(&now);
+		char dstr[9];
+		sprintf(dstr,"%04d%02d%02d",1900+today->tm_year,today->tm_mon+1,today->tm_mday);
+		gameDate = dstr;
 		sName = s_name;
 		uName = u_name;
 		kifu.resize(0);
@@ -87,6 +94,7 @@ public:
 		Kifu kif;
 		readKIF(kif_fname, &kif);
 		init(NULL, kif.sente, kif.gote);
+		gameDate = kif.date;
 		kifu.reserve(kif.tesuu);
 		for (int i=0; i<kif.tesuu; ++i)
 			kifu.push_back(kif.sashite[i]);
@@ -191,6 +199,11 @@ int ShogiGame::board(int x, int y) const
 int ShogiGame::tegoma(int teban, int koma) const
 {
 	return shg->shitate.komaDai[teban][koma];
+}
+
+const char* ShogiGame::date() const
+{
+	return shg->gameDate.c_str();
 }
 
 const char* ShogiGame::shitate() const

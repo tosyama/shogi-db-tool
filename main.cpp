@@ -29,6 +29,7 @@ int main(int argc, const char * argv[]) {
 	shg.move(2,7,2,6,false);
 	shg.print(1);
 	printf("%s\n", shg.currentKyCode());
+	printf("%s %s %s\n", shg.date(), shg.shitate(), shg.uwate());
 	int c;
 
 	shg.load("test.kif");
@@ -37,11 +38,11 @@ int main(int argc, const char * argv[]) {
 		switch(c){
 			case 'n':
 				shg.next();
-				shg.print();
+				shg.print(1);
 				break;
 			case 'p':
 				shg.previous();
-				shg.print();
+				shg.print(1);
 				break;
 		}
 	}

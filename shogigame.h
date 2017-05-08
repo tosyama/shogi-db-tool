@@ -21,6 +21,7 @@ public:
 
 	int board(int x, int y) const;
 	int tegoma(int teban, int koma) const;
+	const char* date() const;
 	const char* shitate() const;
 	const char* uwate() const;
 	
