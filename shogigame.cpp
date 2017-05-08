@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <vector>
+#include <string>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
@@ -35,6 +36,8 @@ class  ShogiGame::ShogiGameImpl {
 		return rte;
 	}
 public:
+	std::string sName;
+	std::string uName;
 	ShogiKyokumen shitate;
 	ShogiKyokumen uwate;
 	int teban; // 0: shitate, 1: uwate, -1: free
@@ -56,7 +59,7 @@ public:
 			legalTeNum = 0;
 	}
 
-	void init(const char *kycode) {
+	void init(const char *kycode, const char *s_name, const char *u_name) {
 		if(kycode) {
 			teban = kycode[KyokumenCodeLen] < 'u'? S_TEBAN:U_TEBAN;
 			if (teban == S_TEBAN) {
@@ -72,6 +75,8 @@ public:
 			uwate = shitate;
 			teban = S_TEBAN;
 		}
+		sName = s_name;
+		uName = u_name;
 		kifu.resize(0);
 		curIndex = 0;
 		createLegalTe();
@@ -81,7 +86,7 @@ public:
 	{
 		Kifu kif;
 		readKIF(kif_fname, &kif);
-		init(NULL);
+		init(NULL, kif.sente, kif.gote);
 		kifu.reserve(kif.tesuu);
 		for (int i=0; i<kif.tesuu; ++i)
 			kifu.push_back(kif.sashite[i]);
@@ -170,7 +175,7 @@ public:
 ShogiGame::ShogiGame(const char *kycode)
 {
 	shg = new ShogiGameImpl();
-	shg->init(kycode);
+	shg->init(kycode,"Player1","Player2");
 }
 
 int ShogiGame::load(const char* kif_fname)
@@ -188,6 +193,15 @@ int ShogiGame::tegoma(int teban, int koma) const
 	return shg->shitate.komaDai[teban][koma];
 }
 
+const char* ShogiGame::shitate() const
+{
+	return shg->sName.c_str();
+}
+
+const char* ShogiGame::uwate() const
+{
+	return shg->uName.c_str();
+}
 int ShogiGame::move(int from_x, int from_y, int to_x, int to_y, bool promote)
 {
 	return shg->move(from_x, from_y, to_x, to_y, promote);

@@ -21,6 +21,8 @@ public:
 
 	int board(int x, int y) const;
 	int tegoma(int teban, int koma) const;
+	const char* shitate() const;
+	const char* uwate() const;
 	
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote);
 	int drop(int teban, int koma, int to_x, int to_y);
