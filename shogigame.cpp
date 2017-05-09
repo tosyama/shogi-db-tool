@@ -3,6 +3,7 @@
 #include <time.h>
 #include <vector>
 #include <string>
+#include <new>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
@@ -182,8 +183,20 @@ public:
 
 ShogiGame::ShogiGame(const char *kycode)
 {
-	shg = new ShogiGameImpl();
-	shg->init(kycode,"Player1","Player2");
+	try {
+		shg = new ShogiGameImpl();
+		shg->init(kycode,"Player1","Player2");
+	} catch (std::bad_alloc &e) {
+		throw;
+	} catch (std::exception &e) {
+		delete shg;
+		throw;
+	}
+}
+
+ShogiGame::~ShogiGame()
+{
+	delete shg;
 }
 
 int ShogiGame::load(const char* kif_fname)

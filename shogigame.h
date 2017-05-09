@@ -17,6 +17,8 @@ class ShogiGame
 	ShogiGameImpl *shg;
 public:
 	ShogiGame(const char* kycode = NULL);
+	~ShogiGame();
+
 	int load(const char *kif_fname);
 
 	int board(int x, int y) const;
