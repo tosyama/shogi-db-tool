@@ -15,6 +15,10 @@ class ShogiGame
 {
 	class ShogiGameImpl;
 	ShogiGameImpl *shg;
+
+	ShogiGame(const ShogiGame&);
+	ShogiGame& operator=(const ShogiGame&);
+
 public:
 	ShogiGame(const char* kycode = NULL);
 	~ShogiGame();
@@ -23,6 +27,7 @@ public:
 
 	int board(int x, int y) const;
 	int tegoma(int teban, int koma) const;
+	int turn();
 	const char* date() const;
 	const char* shitate() const;
 	const char* uwate() const;
@@ -31,9 +36,10 @@ public:
 	int drop(int teban, int koma, int to_x, int to_y);
 	
 	int next();
+	int current();
 	int previous();
-	int go(int teme);
+	int go(int index);
 
 	void print(bool reverse=false) const;
-	char* currentKyCode() const;
+	char* kyCode() const;
 };

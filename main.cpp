@@ -19,16 +19,18 @@
 
 #include "shogigame.h"
 static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s);
+static void interactiveCUI(ShogiGame &shogi);
+
 
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
 	ShogiGame shg;
-	printf("%s\n", shg.currentKyCode());
+	printf("%s\n", shg.kyCode());
 	shg.move(2,7,2,6,false);
 	shg.print(1);
-	printf("%s\n", shg.currentKyCode());
+	printf("%s\n", shg.kyCode());
 	printf("%s %s %s\n", shg.date(), shg.shitate(), shg.uwate());
 	int c;
 
@@ -46,6 +48,7 @@ int main(int argc, const char * argv[]) {
 				break;
 		}
 	}
+	interactiveCUI(shg);
 	return 0;
 
     Kifu kifu;
@@ -122,6 +125,42 @@ int main(int argc, const char * argv[]) {
     } */
     fclose(shg_log);
     return 0;
+}
+static void interactiveCUI(ShogiGame &shogi)
+{
+    char buf[80];
+    int fx, fy, tx, ty;
+
+    while (1) {
+		shogi.print();
+		printf("%d>", shogi.current()+1);
+		fflush(stdout);
+        if(fgets(buf,80,stdin)) {
+            if (buf[0] >= '1' && buf[0] <= '9') { // move
+                fx = buf[0] - '0'; fy = buf[1] - '0';
+                tx = buf[2] - '0'; ty = buf[3] - '0';
+                if(fx >= 1 && fx <=9 && fy >= 1 && fy <= 9 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+                    int prm = (buf[4] == '+') ? 1 : 0;
+					shogi.move(fx, fy, tx, ty, prm);
+				}
+			} else if (buf[0] == '^' || buf[0] == 'v') {
+				int n = buf[1] - '0';
+				tx = buf[2] - '0';
+				ty = buf[3] - '0';
+				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+					int u = buf[0] == 'v' ? 1 : 0;
+					for (int k=1;k<DaiN;k++) {
+						if (shogi.tegoma(u,k)>0 && (--n)==0)
+							shogi.drop(u,k,tx,ty);
+					}
+				}
+            } else switch(buf[0]) {
+				case 'n': shogi.next(); break;
+				case 'p': shogi.previous(); break;
+				case 'q': return;
+			}
+		}
+	}
 }
 
 static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s)

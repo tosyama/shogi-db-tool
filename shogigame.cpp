@@ -120,6 +120,10 @@ public:
 		te.idou.to_y = INNER_Y(to_y);
 		te.idou.nari = promote;
 		sasu(te);
+	
+		kifu.resize(curIndex);
+		kifu.push_back(te);
+		curIndex++;
 		return SG_SUCCESS;
 	}
 
@@ -132,6 +136,10 @@ public:
 		te.uchi.to_x = INNER_X(to_x);
 		te.uchi.to_y = INNER_Y(to_y);
 		sasu(te);
+
+		kifu.resize(curIndex);
+		kifu.push_back(te);
+		curIndex++;
 		return SG_SUCCESS;
 	}
 
@@ -156,15 +164,15 @@ public:
 		return curIndex;
 	}
 
-	int go(int teme) {
-		if (curIndex > teme) {
-			if (teme < 0) teme = 0;
+	int go(int index) {
+		if (curIndex > index) {
+			if (index < 0) index = 0;
 			do previous();
-			while (curIndex != teme);
-		} else if (curIndex < teme) {
-			if (teme > kifu.size()) teme = kifu.size();
+			while (curIndex != index);
+		} else if (curIndex < index) {
+			if (index > kifu.size()) index = kifu.size();
 			do next();
-			while (curIndex != teme);
+			while (curIndex != index);
 		}
 		return curIndex;
 	}
@@ -214,6 +222,11 @@ int ShogiGame::tegoma(int teban, int koma) const
 	return shg->shitate.komaDai[teban][koma];
 }
 
+int ShogiGame::turn()
+{
+	return shg->teban;
+}
+
 const char* ShogiGame::date() const
 {
 	return shg->gameDate.c_str();
@@ -243,14 +256,19 @@ int ShogiGame::next()
 	return shg->next();
 }
 
+int ShogiGame::current()
+{
+	return shg->curIndex;
+}
+
 int ShogiGame::previous()
 {
 	return shg->previous();
 }
 
-int ShogiGame::go(int teme)
+int ShogiGame::go(int index)
 {
-	return shg->go(teme);
+	return shg->go(index);
 }
 
 void ShogiGame::print(bool reverse) const
@@ -261,7 +279,7 @@ void ShogiGame::print(bool reverse) const
 		printKyokumen(stdout, &shg->shitate);
 }
 
-char* ShogiGame::currentKyCode() const
+char* ShogiGame::kyCode() const
 {
 	return shg->currentKyCode();
 }
