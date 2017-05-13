@@ -160,6 +160,8 @@ public:
 			temodoshi(&shitate, &te);
 			Sashite rte=revS(te);
 			temodoshi(&uwate, &rte);
+			if (teban == S_TEBAN) teban= U_TEBAN;
+			else if (teban == U_TEBAN) teban = S_TEBAN;
 		}
 		return curIndex;
 	}

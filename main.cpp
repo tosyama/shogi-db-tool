@@ -133,7 +133,13 @@ static void interactiveCUI(ShogiGame &shogi)
 
     while (1) {
 		shogi.print();
-		printf("%d>", shogi.current()+1);
+		int t;
+		switch (shogi.turn()) {
+			case 0: t='A'; break;
+			case 1: t='V'; break;
+			default: t='-'; break;
+		}
+		printf("%d%c>", shogi.current()+1,t);
 		fflush(stdout);
         if(fgets(buf,80,stdin)) {
             if (buf[0] >= '1' && buf[0] <= '9') { // move
@@ -143,16 +149,22 @@ static void interactiveCUI(ShogiGame &shogi)
                     int prm = (buf[4] == '+') ? 1 : 0;
 					shogi.move(fx, fy, tx, ty, prm);
 				}
-			} else if (buf[0] == '^' || buf[0] == 'v') {
+			} else if (buf[0] == 'A' || buf[0] == 'V') {
 				int n = buf[1] - '0';
 				tx = buf[2] - '0';
 				ty = buf[3] - '0';
 				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
-					int u = buf[0] == 'v' ? 1 : 0;
+					int u = buf[0] == 'V' ? 1 : 0;
 					for (int k=1;k<DaiN;k++) {
 						if (shogi.tegoma(u,k)>0 && (--n)==0)
 							shogi.drop(u,k,tx,ty);
 					}
+				}
+			} else if (buf[0] == 'g'){
+				if (buf[1] >= '0' && buf[1] <= '9') { // move
+					int n;
+					sscanf(&buf[1],"%d",&n);
+					shogi.go(n);
 				}
             } else switch(buf[0]) {
 				case 'n': shogi.next(); break;
