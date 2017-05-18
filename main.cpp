@@ -27,27 +27,14 @@ FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
 	ShogiGame shg;
-	printf("%s\n", shg.kyCode());
+	printf("%s\n", shg.kycode());
 	shg.move(2,7,2,6,false);
 	shg.print(1);
-	printf("%s\n", shg.kyCode());
+	printf("%s\n", shg.kycode());
 	printf("%s %s %s\n", shg.date(), shg.shitate(), shg.uwate());
 	int c;
 
 	shg.load("test.kif");
-	shg.go(10);
-	while ((c=getchar())!='q') {
-		switch(c){
-			case 'n':
-				shg.next();
-				shg.print(1);
-				break;
-			case 'p':
-				shg.previous();
-				shg.print(1);
-				break;
-		}
-	}
 	interactiveCUI(shg);
 	return 0;
 
@@ -167,6 +154,7 @@ static void interactiveCUI(ShogiGame &shogi)
 					shogi.go(n);
 				}
             } else switch(buf[0]) {
+				case 'c': printf("%s\n", shogi.kycode()); break;
 				case 'n': shogi.next(); break;
 				case 'p': shogi.previous(); break;
 				case 'q': return;

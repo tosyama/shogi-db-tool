@@ -11,9 +11,9 @@
 #include "shogirule.h"
 #include "shogigame.h"
 
-const int U_TEBAN=1;
 const int S_TEBAN=0;
-const int FREE_TEBAN=-1;
+const int U_TEBAN=1;
+const int FREE_TEBAN=2;
 
 class  ShogiGame::ShogiGameImpl {
 	int revX(int x) {return BanX-1-x;}
@@ -96,10 +96,17 @@ public:
 		readKIF(kif_fname, &kif);
 		init(NULL, kif.sente, kif.gote);
 		gameDate = kif.date;
-		kifu.reserve(kif.tesuu);
-		for (int i=0; i<kif.tesuu; ++i)
+		int n = kif.tesuu + 1;
+		kifu.reserve(n);
+		for (int i=0; i<n; ++i)
 			kifu.push_back(kif.sashite[i]);
 		return SG_SUCCESS;
+	}
+
+	int turn() {
+		if (kifu.size() > 0 && kifu[curIndex-1].type == SASHITE_RESULT)
+			return -1;
+		else return teban;
 	}
 
 	void sasu(Sashite &te) {
@@ -112,6 +119,22 @@ public:
 
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote)
 	{
+		// Check critical param err.
+		if (from_x < 1 || from_x > 9
+			|| from_y < 1 || from_y >9
+			|| to_x < 1 || to_x >9
+			|| to_y < 1 || to_y >9
+			|| shitate.shogiBan[INNER_Y(from_y)][INNER_X(from_x)]==EMP) {
+			return SG_FAILED;
+		}
+		if (promote) {
+			switch(shitate.shogiBan[INNER_Y(from_y)][INNER_X(from_x)]&KOMATYPE2) {
+				case KI:
+				case OU:
+					return SG_FAILED;
+			}
+		}
+
 		Sashite te;
 		te.type = SASHITE_IDOU;
 		te.idou.from_x = INNER_X(from_x);
@@ -129,6 +152,13 @@ public:
 
 	int drop(int teban, int koma, int to_x, int to_y)
 	{
+		// Check critical param err.
+		if (teban < 0 || teban > 1 || koma < 0 || koma >= DaiN)
+			return SG_FAILED;
+		if ( to_x < 1 || to_x > 9 || to_y < 1 || to_y >9
+			|| shitate.shogiBan[INNER_Y(to_y)][INNER_X(to_x)]!=EMP)
+			return SG_FAILED;
+
 		Sashite te;
 		te.type = SASHITE_UCHI;
 		te.uchi.uwate = teban;
@@ -146,7 +176,9 @@ public:
 	int next()
 	{
 		if (curIndex < kifu.size()) {
-			sasu(kifu[curIndex]);
+			Sashite &te = kifu[curIndex];
+			if (te.type != SASHITE_RESULT)
+				sasu(te);
 			++curIndex;
 		}
 		return curIndex;
@@ -157,11 +189,13 @@ public:
 		if (curIndex > 0) {
 			--curIndex;
 			Sashite te = kifu[curIndex];
-			temodoshi(&shitate, &te);
-			Sashite rte=revS(te);
-			temodoshi(&uwate, &rte);
-			if (teban == S_TEBAN) teban= U_TEBAN;
-			else if (teban == U_TEBAN) teban = S_TEBAN;
+			if (te.type != SASHITE_RESULT) {
+				temodoshi(&shitate, &te);
+				Sashite rte=revS(te);
+				temodoshi(&uwate, &rte);
+				if (teban == S_TEBAN) teban= U_TEBAN;
+				else if (teban == U_TEBAN) teban = S_TEBAN;
+			}
 		}
 		return curIndex;
 	}
@@ -224,9 +258,9 @@ int ShogiGame::tegoma(int teban, int koma) const
 	return shg->shitate.komaDai[teban][koma];
 }
 
-int ShogiGame::turn()
+int ShogiGame::turn() const
 {
-	return shg->teban;
+	return shg->turn();
 }
 
 const char* ShogiGame::date() const
@@ -258,11 +292,6 @@ int ShogiGame::next()
 	return shg->next();
 }
 
-int ShogiGame::current()
-{
-	return shg->curIndex;
-}
-
 int ShogiGame::previous()
 {
 	return shg->previous();
@@ -273,6 +302,16 @@ int ShogiGame::go(int index)
 	return shg->go(index);
 }
 
+int ShogiGame::current() const
+{
+	return shg->curIndex;
+}
+
+int ShogiGame::last() const
+{
+	return shg->kifu.size();
+}
+
 void ShogiGame::print(bool reverse) const
 {
 	if (reverse)
@@ -281,7 +320,7 @@ void ShogiGame::print(bool reverse) const
 		printKyokumen(stdout, &shg->shitate);
 }
 
-char* ShogiGame::kyCode() const
+char* ShogiGame::kycode() const
 {
 	return shg->currentKyCode();
 }
