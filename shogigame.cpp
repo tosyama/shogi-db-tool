@@ -173,7 +173,7 @@ public:
 		return SG_SUCCESS;
 	}
 
-	int next()
+	void next()
 	{
 		if (curIndex < kifu.size()) {
 			Sashite &te = kifu[curIndex];
@@ -181,10 +181,9 @@ public:
 				sasu(te);
 			++curIndex;
 		}
-		return curIndex;
 	}
 
-	int previous()
+	void previous()
 	{
 		if (curIndex > 0) {
 			--curIndex;
@@ -197,10 +196,9 @@ public:
 				else if (teban == U_TEBAN) teban = S_TEBAN;
 			}
 		}
-		return curIndex;
 	}
 
-	int go(int index) {
+	void go(int index) {
 		if (curIndex > index) {
 			if (index < 0) index = 0;
 			do previous();
@@ -210,7 +208,6 @@ public:
 			do next();
 			while (curIndex != index);
 		}
-		return curIndex;
 	}
 
 	char *currentKyCode()
@@ -287,19 +284,19 @@ int ShogiGame::drop(int teban, int koma, int to_x, int to_y)
 	return shg->drop(teban, koma, to_x, to_y);
 }
 
-int ShogiGame::next()
+void ShogiGame::next()
 {
-	return shg->next();
+	shg->next();
 }
 
-int ShogiGame::previous()
+void ShogiGame::previous()
 {
-	return shg->previous();
+	shg->previous();
 }
 
-int ShogiGame::go(int index)
+void ShogiGame::go(int index)
 {
-	return shg->go(index);
+	shg->go(index);
 }
 
 int ShogiGame::current() const

@@ -47,9 +47,9 @@ public:
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote);
 	int drop(int teban, int koma, int to_x, int to_y);
 	
-	int next();
-	int previous();
-	int go(int index);
+	void next();
+	void previous();
+	void go(int index);
 
 	int current() const;
 	int last() const;
