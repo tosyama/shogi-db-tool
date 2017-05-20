@@ -1,5 +1,5 @@
 PROGRAM = a.out
-OBJS = main.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o shogirule.o
+OBJS = main.o shogigame.o shogiban.o kyokumencode.o sashite.o kifu.o shogidb.o shogirule.o
 TEST = test/tester
 TESTCASES = test/*Test.cpp
 

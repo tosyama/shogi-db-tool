@@ -17,12 +17,27 @@
 #include "shogidb.h"
 #include "shogirule.h"
 
+#include "shogigame.h"
 static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s);
+static void interactiveCUI(ShogiGame &shogi);
+
 
 static char komaStr[][5] = { "・","歩","香","桂","銀","金","角","飛","玉", "と", "杏", "圭", "全","　","馬","龍"};
 FILE *shg_log = NULL;
 
 int main(int argc, const char * argv[]) {
+	ShogiGame shg;
+	printf("%s\n", shg.kycode());
+	shg.move(2,7,2,6,false);
+	shg.print(1);
+	printf("%s\n", shg.kycode());
+	printf("%s %s %s\n", shg.date(), shg.shitate(), shg.uwate());
+	int c;
+
+	shg.load("test.kif");
+	interactiveCUI(shg);
+	return 0;
+
     Kifu kifu;
     ShogiKyokumen shogi;
     char code[KyokumenCodeLen];
@@ -97,6 +112,55 @@ int main(int argc, const char * argv[]) {
     } */
     fclose(shg_log);
     return 0;
+}
+static void interactiveCUI(ShogiGame &shogi)
+{
+    char buf[80];
+    int fx, fy, tx, ty;
+
+    while (1) {
+		shogi.print();
+		int t;
+		switch (shogi.turn()) {
+			case 0: t='A'; break;
+			case 1: t='V'; break;
+			default: t='-'; break;
+		}
+		printf("%d%c>", shogi.current()+1,t);
+		fflush(stdout);
+        if(fgets(buf,80,stdin)) {
+            if (buf[0] >= '1' && buf[0] <= '9') { // move
+                fx = buf[0] - '0'; fy = buf[1] - '0';
+                tx = buf[2] - '0'; ty = buf[3] - '0';
+                if(fx >= 1 && fx <=9 && fy >= 1 && fy <= 9 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+                    int prm = (buf[4] == '+') ? 1 : 0;
+					shogi.move(fx, fy, tx, ty, prm);
+				}
+			} else if (buf[0] == 'A' || buf[0] == 'V') {
+				int n = buf[1] - '0';
+				tx = buf[2] - '0';
+				ty = buf[3] - '0';
+				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
+					int u = buf[0] == 'V' ? 1 : 0;
+					for (int k=1;k<DaiN;k++) {
+						if (shogi.tegoma(u,k)>0 && (--n)==0)
+							shogi.drop(u,k,tx,ty);
+					}
+				}
+			} else if (buf[0] == 'g'){
+				if (buf[1] >= '0' && buf[1] <= '9') { // move
+					int n;
+					sscanf(&buf[1],"%d",&n);
+					shogi.go(n);
+				}
+            } else switch(buf[0]) {
+				case 'c': printf("%s\n", shogi.kycode()); break;
+				case 'n': shogi.next(); break;
+				case 'p': shogi.previous(); break;
+				case 'q': return;
+			}
+		}
+	}
 }
 
 static int interactiveCUI(ShogiKyokumen *shogi, Sashite *s)
