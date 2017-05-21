@@ -160,8 +160,8 @@ Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, 
     }
     
     if (nari) {
-        assert(!(k1 & NARI));   // 成りが指定されている場合は成り駒でないこと
-        shogiBan[to_y][to_x] = (Koma)(k1 + NARI);
+		assert((k1 & KOMATYPE1)!=KI && (k1 & KOMATYPE1)!=OU);
+        shogiBan[to_y][to_x] = (Koma)(k1 ^ NARI);
     }
     else shogiBan[to_y][to_x] = k1;
     shogiBan[from_y][from_x] = EMP;
