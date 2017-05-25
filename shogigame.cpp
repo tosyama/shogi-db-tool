@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <new>
+#include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
@@ -56,7 +57,7 @@ public:
 	void createLegalTe() {
 		if(teban == S_TEBAN)
 			createSashiteAll(&shitate, legalTe, &legalTeNum);
-		else if(teban == U_TEBAN)
+		else if (teban == U_TEBAN)
 			createSashiteAll(&uwate, legalTe, &legalTeNum);
 		else 
 			legalTeNum = 0;
@@ -109,12 +110,23 @@ public:
 		else return teban;
 	}
 
-	void sasu(Sashite &te) {
+	// true:legal
+	bool sasu(Sashite &te, bool check_legal = false) {
 		Sashite rte = revS(te);
+		bool legal = true;
+		if (check_legal) {
+			if (teban == S_TEBAN) {
+				createSashiteAll(&shitate, legalTe, &legalTeNum);
+			} else if (teban == U_TEBAN) {
+				createSashiteAll(&uwate, legalTe, &legalTeNum);
+			}
+		}
 		::sasu(&shitate,&te);
 		::sasu(&uwate,&rte);
 		if (teban == S_TEBAN) teban= U_TEBAN;
 		else if (teban == U_TEBAN) teban = S_TEBAN;
+
+		return legal;
 	}
 
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote)
@@ -142,12 +154,14 @@ public:
 		te.idou.to_x = INNER_X(to_x);
 		te.idou.to_y = INNER_Y(to_y);
 		te.idou.nari = promote;
-		sasu(te);
-	
+
+		int ret = sasu(te, true) ? SG_SUCCESS : SG_FOUL;
+
 		kifu.resize(curIndex);
 		kifu.push_back(te);
 		curIndex++;
-		return SG_SUCCESS;
+
+		return ret; 
 	}
 
 	int drop(int teban, int koma, int to_x, int to_y)

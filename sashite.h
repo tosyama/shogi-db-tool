@@ -48,3 +48,4 @@ int sasu(ShogiKyokumen *shogi, Sashite *s);
 void temodoshi(ShogiKyokumen *shogi, const Sashite *s);
 
 int extractSashie(const Sashite **start, Sashite target, const Sashite *array, int n); 
+bool existsSashite(Sashite target, const Sashite *array, int n); 

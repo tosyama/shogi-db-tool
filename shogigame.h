@@ -6,10 +6,20 @@
 //  Copyright (c) 2017 tosyama. All rights reserved.
 //
 
-enum {
-	SG_SUCCESS = 0,
-	SG_FAILED = -1
-};
+const int SG_SUCCESS = 0;
+const int SG_FAILED = -1;
+const int SG_FOUL = 1;
+
+const int Fu = 1;
+const int Kyo = 2;
+const int Kei = 3;
+const int Gin = 4;
+const int Kin = 5;
+const int Kaku = 6;
+const int Hisya = 7;
+const int Gyoku = 8;
+const int Promoted = 8;
+const int Uwate = 16;
 
 class ShogiGame
 {
@@ -20,6 +30,7 @@ class ShogiGame
 	ShogiGame& operator=(const ShogiGame&);
 
 public:
+
 	ShogiGame(const char* kycode = NULL);
 	~ShogiGame();
 

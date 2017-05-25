@@ -90,3 +90,20 @@ int extractSashie(const Sashite **start, Sashite target, const Sashite *array, i
 	}
 	return 0;
 }
+
+bool existsSashite(Sashite target, const Sashite *array, int n)
+{
+	for (int i=0; i<n; ++i) {
+		Sashite s = array[i];
+		if (target.data.from == s.data.from) {
+			for (int j=i+1; j<n; ++j) {
+				if (target.data.from == s.data.from) {
+					if (target.data.to == s.data.to)
+						return true;
+				}
+				else return false;
+			}
+		}
+	}
+	return false;
+}
