@@ -117,8 +117,10 @@ public:
 		if (check_legal) {
 			if (teban == S_TEBAN) {
 				createSashiteAll(&shitate, legalTe, &legalTeNum);
+				legal=existsSashite(te,legalTe,legalTeNum);
 			} else if (teban == U_TEBAN) {
 				createSashiteAll(&uwate, legalTe, &legalTeNum);
+				legal=existsSashite(rte,legalTe,legalTeNum);
 			}
 		}
 		::sasu(&shitate,&te);

@@ -137,6 +137,7 @@ Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, 
     Koma k1, k2;
     k1 = shogiBan[from_y][from_x];
     k2 = shogiBan[to_y][to_x];
+	bool moved = true;
     
     assert(k1 != EMP);
     if (k1 == OU) { // 王の位置は常に記録
@@ -152,6 +153,9 @@ Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, 
 		} else if (k2 == UOU) {
 			shogi->uou_x = shogi->uou_y = NonPos;
             komaDai[1][0]++;
+		} else if (from_x==to_x && from_y==to_y && nari) {
+			moved = false;
+			k2 = EMP;
 		} else if (k1 & UWATE) {
             komaDai[1][k2 & KOMATYPE1]++;
         } else {
@@ -164,7 +168,7 @@ Koma sashite1(ShogiKyokumen *shogi, int from_x, int from_y, int to_x, int to_y, 
         shogiBan[to_y][to_x] = (Koma)(k1 ^ NARI);
     }
     else shogiBan[to_y][to_x] = k1;
-    shogiBan[from_y][from_x] = EMP;
+    if (moved) shogiBan[from_y][from_x] = EMP;
     
     return k2;  //手を戻すときに使用するため
 }

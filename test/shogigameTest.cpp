@@ -59,4 +59,13 @@ TEST_CASE("shogigame move manual tests", "[game]")
 	REQUIRE(shogi.tegoma(1,Kaku)==1);
 	REQUIRE(shogi.board(2,2)==0);
 	CHECK(shogi.current()==4);
+
+	CHECK(shogi.move(2,8,2,8,true)==SG_FOUL);
+	REQUIRE(shogi.board(2,8)==(Hisya|Promoted));
+	shogi.previous();
+	REQUIRE(shogi.board(2,8)==Hisya);
+
+	shogi.previous();
+	REQUIRE(shogi.board(2,2)==(Kaku|Uwate));
+	REQUIRE(shogi.tegoma(1,Kaku)==0);
 }

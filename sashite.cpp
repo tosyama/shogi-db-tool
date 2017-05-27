@@ -35,20 +35,26 @@ void temodoshi(ShogiKyokumen *shogi, const Sashite *s)
     int (*komaDai)[DaiN] = shogi->komaDai;
 
     if (s->type == SASHITE_IDOU) {
+		int from_x = s->idou.from_x;
+		int from_y = s->idou.from_y;
+		int to_x = s->idou.to_x;
+		int to_y = s->idou.to_y;
+		int nari = s->idou.nari;
         Koma torik = (Koma)s->idou.torigoma;
-        Koma k =shogiBan[s->idou.to_y][s->idou.to_x];
-        if(s->idou.nari) k = (Koma)(k ^ NARI);
-        shogiBan[s->idou.from_y][s->idou.from_x] = k;
-        shogiBan[s->idou.to_y][s->idou.to_x] = torik;
+        Koma k =shogiBan[to_y][to_x];
+        if(nari) k = (Koma)(k ^ NARI);
+        shogiBan[from_y][from_x] = k;
+		if (from_x!=to_x || from_y!=to_y || !nari)
+			shogiBan[to_y][to_x] = torik;
         if (torik != EMP) {
 			int dai_uwate;
 			if(torik==OU) {
-				shogi->ou_x = s->idou.to_x;
-				shogi->ou_y = s->idou.to_y;
+				shogi->ou_x = to_x;
+				shogi->ou_y = to_y;
 				dai_uwate = 0;
 			} else if(torik==UOU) {
-				shogi->uou_x = s->idou.to_x;
-				shogi->uou_y = s->idou.to_y;
+				shogi->uou_x = to_x;
+				shogi->uou_y = to_y;
 				dai_uwate = 1;
 			} else if(k!=EMP)dai_uwate = (k&UWATE) ? 1 : 0;
             else dai_uwate = (torik&UWATE) ? 1 : 0;
@@ -56,12 +62,12 @@ void temodoshi(ShogiKyokumen *shogi, const Sashite *s)
             komaDai[dai_uwate][torik&KOMATYPE1]--;
         }
 		if (k == OU) {
-			shogi->ou_x = s->idou.from_x;
-			shogi->ou_y = s->idou.from_y;
+			shogi->ou_x = from_x;
+			shogi->ou_y = from_y;
 		}
 		if (k == UOU) {
-			shogi->uou_x = s->idou.from_x;
-			shogi->uou_y = s->idou.from_y;
+			shogi->uou_x = from_x;
+			shogi->uou_y = from_y;
 		}
     } else if (s->type == SASHITE_UCHI) {
         assert(shogiBan[s->uchi.to_y][s->uchi.to_x] != EMP);
