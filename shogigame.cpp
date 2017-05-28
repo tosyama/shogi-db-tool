@@ -169,7 +169,7 @@ public:
 	int drop(int teban, int koma, int to_x, int to_y)
 	{
 		// Check critical param err.
-		if (teban < 0 || teban > 1 || koma < 0 || koma >= DaiN)
+		if (teban < 0 || teban > 1 || koma < Fu || koma > Gyoku)
 			return SG_FAILED;
 		if ( to_x < 1 || to_x > 9 || to_y < 1 || to_y >9
 			|| shitate.shogiBan[INNER_Y(to_y)][INNER_X(to_x)]!=EMP)
@@ -268,6 +268,7 @@ int ShogiGame::board(int x, int y) const
 
 int ShogiGame::tegoma(int teban, int koma) const
 {
+	if (koma == Gyoku) koma = 0;
 	return shg->shitate.komaDai[teban][koma];
 }
 

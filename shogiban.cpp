@@ -177,13 +177,19 @@ void sashite2(ShogiKyokumen *shogi, int uwate, Koma koma, int to_x, int to_y)
 {
     Koma (*shogiBan)[BanX] = shogi->shogiBan;
     int (*komaDai)[DaiN] = shogi->komaDai;
-    
-    assert(komaDai[uwate][koma] > 0); // 駒を持ってること
+	int k = koma & KOMATYPE1;
+
+    assert(komaDai[uwate][k] > 0);
     assert(shogiBan[to_y][to_x] == EMP);
     
     if (uwate) shogiBan[to_y][to_x] = (Koma) (koma + UWATE);
     else shogiBan[to_y][to_x] = koma;
 
-    komaDai[uwate][koma]--;
+    komaDai[uwate][k]--;
+	if (koma == OU) {
+		shogi->ou_x = to_x; shogi->ou_y = to_y;
+	} else if (koma == UOU) {
+		shogi->uou_x = to_x; shogi->uou_y = to_y;
+	}
 }
 

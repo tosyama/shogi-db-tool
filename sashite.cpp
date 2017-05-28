@@ -70,9 +70,20 @@ void temodoshi(ShogiKyokumen *shogi, const Sashite *s)
 			shogi->uou_y = from_y;
 		}
     } else if (s->type == SASHITE_UCHI) {
-        assert(shogiBan[s->uchi.to_y][s->uchi.to_x] != EMP);
-        shogiBan[s->uchi.to_y][s->uchi.to_x] = EMP;
-        komaDai[s->uchi.uwate][s->uchi.koma & KOMATYPE1]++;
+		int to_x = s->uchi.to_x;
+		int to_y = s->uchi.to_y;
+		int k = s->uchi.koma;
+        assert(shogiBan[to_y][to_x] != EMP);
+        shogiBan[to_y][to_x] = EMP;
+        komaDai[s->uchi.uwate][k & KOMATYPE1]++;
+		if (k == OU) {
+			if (s->uchi.uwate) {
+				shogi->uou_x = shogi->uou_y = NonPos;
+			} else {
+				shogi->ou_x = shogi->ou_y = NonPos;
+			}
+				
+		}
     } else if (s->type == SASHITE_RESULT) {
         // do nothing
     } else {

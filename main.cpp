@@ -142,7 +142,7 @@ static void interactiveCUI(ShogiGame &shogi)
 				ty = buf[3] - '0';
 				if (n>=1 && n<=7 && tx >=1 && tx <= 9 && ty >= 1 && ty <= 9) {
 					int u = buf[0] == 'V' ? 1 : 0;
-					for (int k=1;k<DaiN;k++) {
+					for (int k=Fu;k<=Gyoku;k++) {
 						if (shogi.tegoma(u,k)>0 && (--n)==0)
 							shogi.drop(u,k,tx,ty);
 					}
