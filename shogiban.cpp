@@ -88,12 +88,13 @@ void printKyokumen(FILE *f, ShogiKyokumen *shogi)
     
     fprintf(f, "後手の持駒：");
     int nashi = 1;
-    for (int k=0; k<DaiN; k++) {
-        if (komaDai[1][k] == 1) {
-            fprintf(f, "%s ", komaStr[k?k:OU]);
+    for (int k=1; k<=DaiN; k++) {
+		int kk = k==DaiN ? 0 : k;
+        if (komaDai[1][kk] == 1) {
+            fprintf(f, "%s ", komaStr[k]);
             nashi = 0;
-        } else if (komaDai[1][k]>1) {
-            fprintf(f, "%s%d ", komaStr[k?k:OU], komaDai[1][k]);
+        } else if (komaDai[1][kk]>1) {
+            fprintf(f, "%s%d ", komaStr[k], komaDai[1][kk]);
             nashi = 0;
         }
     }
@@ -115,12 +116,13 @@ void printKyokumen(FILE *f, ShogiKyokumen *shogi)
     fprintf(f, "+---------------------------+\n");
     fprintf(f, "先手の持駒：");
     nashi = 1;
-    for (int k=0; k<DaiN; k++) {
-        if (komaDai[0][k] == 1) {
-            fprintf(f, "%s ", komaStr[k?k:OU]);
+    for (int k=1; k<=DaiN; k++) {
+		int kk = k==DaiN ? 0 : k;
+        if (komaDai[0][kk] == 1) {
+            fprintf(f, "%s ", komaStr[k]);
             nashi = 0;
-        } else if (komaDai[0][k]>1) {
-            fprintf(f, "%s%d ", komaStr[k?k:OU], komaDai[0][k]);
+        } else if (komaDai[0][kk]>1) {
+            fprintf(f, "%s%d ", komaStr[k], komaDai[0][kk]);
             nashi = 0;
         }
     }

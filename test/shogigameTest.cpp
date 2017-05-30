@@ -52,6 +52,7 @@ TEST_CASE("shogigame move manual tests", "[game]")
 	CHECK(shogi.move(8,3,8,4,false)==SG_FAILED);
 	CHECK(shogi.move(8,4,10,4,false)==SG_FAILED);
 	CHECK(shogi.move(8,4,8,10,false)==SG_FAILED);
+	CHECK(shogi.move(5,9,5,8,true)==SG_FAILED);
 	CHECK(shogi.current()==3);
 
 	// Foul play
@@ -68,4 +69,13 @@ TEST_CASE("shogigame move manual tests", "[game]")
 	shogi.previous();
 	REQUIRE(shogi.board(2,2)==(Kaku|Uwate));
 	REQUIRE(shogi.tegoma(1,Kaku)==0);
+	
+	CHECK(shogi.move(2,2,5,9,false)==SG_FOUL);
+	REQUIRE(shogi.board(5,9)==(Kaku|Uwate));
+	REQUIRE(shogi.tegoma(0,Gyoku)==1);
+
+	shogi.previous();
+	REQUIRE(shogi.board(2,2)==(Kaku|Uwate));
+	REQUIRE(shogi.board(5,9)==Gyoku);
+	REQUIRE(shogi.tegoma(0,Gyoku)==0);
 }
