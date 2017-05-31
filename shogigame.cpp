@@ -51,16 +51,19 @@ public:
 	
 	int legalTeNum;
 	Sashite legalTe[MAX_LEGAL_SASHITE];
+	bool isCreatedLegalTe;
 
 	char kycode[KyokumenCodeLen+1];
 	
 	void createLegalTe() {
+		if (isCreatedLegalTe) return;
 		if(teban == S_TEBAN)
 			createSashiteAll(&shitate, legalTe, &legalTeNum);
 		else if (teban == U_TEBAN)
 			createSashiteAll(&uwate, legalTe, &legalTeNum);
 		else 
 			legalTeNum = 0;
+		isCreatedLegalTe = true;
 	}
 
 	void init(const char *kycode, const char *s_name, const char *u_name) {
@@ -88,7 +91,7 @@ public:
 		uName = u_name;
 		kifu.resize(0);
 		curIndex = 0;
-		createLegalTe();
+		isCreatedLegalTe = false;
 	}
 
 	int load(const char* kif_fname)
@@ -115,20 +118,30 @@ public:
 		Sashite rte = revS(te);
 		bool legal = true;
 		if (check_legal) {
+			createLegalTe();
 			if (teban == S_TEBAN) {
-				createSashiteAll(&shitate, legalTe, &legalTeNum);
 				legal=existsSashite(te,legalTe,legalTeNum);
 			} else if (teban == U_TEBAN) {
-				createSashiteAll(&uwate, legalTe, &legalTeNum);
 				legal=existsSashite(rte,legalTe,legalTeNum);
 			}
 		}
 		::sasu(&shitate,&te);
 		::sasu(&uwate,&rte);
+		isCreatedLegalTe = false;
 		if (teban == S_TEBAN) teban= U_TEBAN;
 		else if (teban == U_TEBAN) teban = S_TEBAN;
 
 		return legal;
+	}
+
+	void temodoshi(Sashite te)
+	{
+		Sashite rte=revS(te);
+		::temodoshi(&shitate, &te);
+		::temodoshi(&uwate, &rte);
+		isCreatedLegalTe = false;
+		if (teban == S_TEBAN) teban= U_TEBAN;
+		else if (teban == U_TEBAN) teban = S_TEBAN;
 	}
 
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote)
@@ -204,13 +217,8 @@ public:
 		if (curIndex > 0) {
 			--curIndex;
 			Sashite te = kifu[curIndex];
-			if (te.type != SASHITE_RESULT) {
-				temodoshi(&shitate, &te);
-				Sashite rte=revS(te);
-				temodoshi(&uwate, &rte);
-				if (teban == S_TEBAN) teban= U_TEBAN;
-				else if (teban == U_TEBAN) teban = S_TEBAN;
-			}
+			if (te.type != SASHITE_RESULT)
+				temodoshi(te);
 		}
 	}
 
