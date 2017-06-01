@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <new>
+#include <assert.h>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
@@ -50,16 +51,19 @@ public:
 	
 	int legalTeNum;
 	Sashite legalTe[MAX_LEGAL_SASHITE];
+	bool isCreatedLegalTe;
 
 	char kycode[KyokumenCodeLen+1];
 	
 	void createLegalTe() {
+		if (isCreatedLegalTe) return;
 		if(teban == S_TEBAN)
 			createSashiteAll(&shitate, legalTe, &legalTeNum);
-		else if(teban == U_TEBAN)
+		else if (teban == U_TEBAN)
 			createSashiteAll(&uwate, legalTe, &legalTeNum);
 		else 
 			legalTeNum = 0;
+		isCreatedLegalTe = true;
 	}
 
 	void init(const char *kycode, const char *s_name, const char *u_name) {
@@ -87,7 +91,7 @@ public:
 		uName = u_name;
 		kifu.resize(0);
 		curIndex = 0;
-		createLegalTe();
+		isCreatedLegalTe = false;
 	}
 
 	int load(const char* kif_fname)
@@ -109,10 +113,33 @@ public:
 		else return teban;
 	}
 
-	void sasu(Sashite &te) {
+	// true:legal
+	bool sasu(Sashite &te, bool check_legal = false) {
 		Sashite rte = revS(te);
+		bool legal = true;
+		if (check_legal) {
+			createLegalTe();
+			if (teban == S_TEBAN) {
+				legal=existsSashite(te,legalTe,legalTeNum);
+			} else if (teban == U_TEBAN) {
+				legal=existsSashite(rte,legalTe,legalTeNum);
+			}
+		}
 		::sasu(&shitate,&te);
 		::sasu(&uwate,&rte);
+		isCreatedLegalTe = false;
+		if (teban == S_TEBAN) teban= U_TEBAN;
+		else if (teban == U_TEBAN) teban = S_TEBAN;
+
+		return legal;
+	}
+
+	void temodoshi(Sashite te)
+	{
+		Sashite rte=revS(te);
+		::temodoshi(&shitate, &te);
+		::temodoshi(&uwate, &rte);
+		isCreatedLegalTe = false;
 		if (teban == S_TEBAN) teban= U_TEBAN;
 		else if (teban == U_TEBAN) teban = S_TEBAN;
 	}
@@ -142,18 +169,20 @@ public:
 		te.idou.to_x = INNER_X(to_x);
 		te.idou.to_y = INNER_Y(to_y);
 		te.idou.nari = promote;
-		sasu(te);
-	
+
+		int ret = sasu(te, true) ? SG_SUCCESS : SG_FOUL;
+
 		kifu.resize(curIndex);
 		kifu.push_back(te);
 		curIndex++;
-		return SG_SUCCESS;
+
+		return ret; 
 	}
 
 	int drop(int teban, int koma, int to_x, int to_y)
 	{
 		// Check critical param err.
-		if (teban < 0 || teban > 1 || koma < 0 || koma >= DaiN)
+		if (teban < 0 || teban > 1 || koma < Fu || koma > Gyoku)
 			return SG_FAILED;
 		if ( to_x < 1 || to_x > 9 || to_y < 1 || to_y >9
 			|| shitate.shogiBan[INNER_Y(to_y)][INNER_X(to_x)]!=EMP)
@@ -188,13 +217,8 @@ public:
 		if (curIndex > 0) {
 			--curIndex;
 			Sashite te = kifu[curIndex];
-			if (te.type != SASHITE_RESULT) {
-				temodoshi(&shitate, &te);
-				Sashite rte=revS(te);
-				temodoshi(&uwate, &rte);
-				if (teban == S_TEBAN) teban= U_TEBAN;
-				else if (teban == U_TEBAN) teban = S_TEBAN;
-			}
+			if (te.type != SASHITE_RESULT)
+				temodoshi(te);
 		}
 	}
 
@@ -252,6 +276,7 @@ int ShogiGame::board(int x, int y) const
 
 int ShogiGame::tegoma(int teban, int koma) const
 {
+	if (koma == Gyoku) koma = 0;
 	return shg->shitate.komaDai[teban][koma];
 }
 

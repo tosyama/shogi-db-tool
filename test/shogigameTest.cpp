@@ -14,17 +14,17 @@ TEST_CASE("shogigame creation tests", "[game]")
 	CHECK(shogi.turn()==0);
 	shogi.next();
 	REQUIRE(shogi.turn()==1);
-	CHECK(shogi.board(2,6)==1);
+	CHECK(shogi.board(2,6)==Fu);
 	shogi.previous();
 	CHECK(shogi.turn()==0);
  	REQUIRE(shogi.board(2,6)==0);
 	shogi.go(11);
-	REQUIRE(shogi.tegoma(0,1)==1);
-	REQUIRE(shogi.tegoma(1,1)==1);
+	REQUIRE(shogi.tegoma(0,Fu)==1);
+	REQUIRE(shogi.tegoma(1,Fu)==1);
 	shogi.previous();
-	REQUIRE(shogi.tegoma(0,1)==0);
+	REQUIRE(shogi.tegoma(0,Fu)==0);
 	shogi.previous();
-	REQUIRE(shogi.tegoma(1,1)==0);
+	REQUIRE(shogi.tegoma(1,Fu)==0);
 
 	CHECK(shogi.last() == 144);
 	shogi.go(shogi.last());
@@ -33,4 +33,49 @@ TEST_CASE("shogigame creation tests", "[game]")
 	CHECK(shogi.turn() == 1);
 }
 
+TEST_CASE("shogigame move manual tests", "[game]")
+{
+    ShogiGame shogi;
 
+	// Legal move.
+	CHECK(shogi.move(7,7,7,6,false)==SG_SUCCESS);
+	REQUIRE(shogi.board(7,6)==Fu);
+
+	CHECK(shogi.move(8,3,8,4,false)==SG_SUCCESS);
+	REQUIRE(shogi.board(8,4)==(Fu|Uwate));
+
+	CHECK(shogi.move(8,8,3,3,true)==SG_SUCCESS);
+	REQUIRE(shogi.board(3,3)==(Kaku|Promoted));
+	REQUIRE(shogi.tegoma(0,Fu)==1);
+
+	// Critical error move.
+	CHECK(shogi.move(8,3,8,4,false)==SG_FAILED);
+	CHECK(shogi.move(8,4,10,4,false)==SG_FAILED);
+	CHECK(shogi.move(8,4,8,10,false)==SG_FAILED);
+	CHECK(shogi.move(5,9,5,8,true)==SG_FAILED);
+	CHECK(shogi.current()==3);
+
+	// Foul play
+	CHECK(shogi.move(2,2,2,2,false)==SG_FOUL);
+	REQUIRE(shogi.tegoma(1,Kaku)==1);
+	REQUIRE(shogi.board(2,2)==0);
+	CHECK(shogi.current()==4);
+
+	CHECK(shogi.move(2,8,2,8,true)==SG_FOUL);
+	REQUIRE(shogi.board(2,8)==(Hisya|Promoted));
+	shogi.previous();
+	REQUIRE(shogi.board(2,8)==Hisya);
+
+	shogi.previous();
+	REQUIRE(shogi.board(2,2)==(Kaku|Uwate));
+	REQUIRE(shogi.tegoma(1,Kaku)==0);
+	
+	CHECK(shogi.move(2,2,5,9,false)==SG_FOUL);
+	REQUIRE(shogi.board(5,9)==(Kaku|Uwate));
+	REQUIRE(shogi.tegoma(0,Gyoku)==1);
+
+	shogi.previous();
+	REQUIRE(shogi.board(2,2)==(Kaku|Uwate));
+	REQUIRE(shogi.board(5,9)==Gyoku);
+	REQUIRE(shogi.tegoma(0,Gyoku)==0);
+}
