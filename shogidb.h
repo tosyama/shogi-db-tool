@@ -8,3 +8,13 @@
 
 void createShogiDB(const char* filename);
 void insertShogiDB(const char* filename, Kifu* kifu);
+
+class ShogiDB
+{
+	class ShogiDBImpl;
+	ShogiDBImpl *sdb;
+
+public:
+	ShogiDB(const char* filename);
+	~ShogiDB();
+};

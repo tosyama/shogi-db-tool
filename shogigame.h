@@ -55,6 +55,7 @@ public:
 	
 	/// @retval SG_SUCCESS
 	/// @retval SG_FAILED Operation was canceled by paramater error.
+	/// @retval SG_FOUL Operation was successed but it's foul play.
 	int move(int from_x, int from_y, int to_x, int to_y, bool promote);
 	int drop(int teban, int koma, int to_x, int to_y);
 	

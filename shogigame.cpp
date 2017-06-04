@@ -234,6 +234,8 @@ public:
 		}
 	}
 
+	// TODO: push/pop for temorary analysis.
+
 	char *currentKyCode()
 	{
 		if (teban==U_TEBAN) {

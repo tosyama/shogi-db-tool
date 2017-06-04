@@ -6,11 +6,11 @@
 //  Copyright (c) 2016 tosyama. All rights reserved.
 //
 
-
 #include <stdio.h>
 #include <assert.h>
 #include <sqlite3.h>
 #include <sys/time.h>
+#include <new>
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
@@ -262,4 +262,36 @@ void insertShogiDB(const char* filename, Kifu* kifu)
         assert(ret == SQLITE_OK);
     }
     sqlite3_close(db);
+}
+
+class ShogiDB::ShogiDBImpl
+{
+public:
+    sqlite3 *db;
+	ShogiDBImpl(const char* filename)
+	{
+		int ret = sqlite3_open(filename, &db);
+		assert(ret == SQLITE_OK);
+	}
+
+	~ShogiDBImpl()
+	{
+		sqlite3_close(db);
+	}
+};
+
+ShogiDB::ShogiDB(const char *filename)
+{
+	try {
+		sdb = new ShogiDBImpl(filename);
+	} catch (std::bad_alloc &e) {
+		throw;
+	} catch (std::exception &e) {
+		throw;
+	}
+}
+
+ShogiDB::~ShogiDB()
+{
+	delete sdb;
 }
