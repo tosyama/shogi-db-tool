@@ -7,7 +7,7 @@
 //
 
 void createShogiDB(const char* filename);
-void insertShogiDB(const char* filename, Kifu* kifu);
+// void insertShogiDB(const char* filename, Kifu* kifu);
 
 class ShogiDB
 {

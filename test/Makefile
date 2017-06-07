@@ -1,5 +1,5 @@
 PROGRAM = tester
-TESTOBJS = mainTest.o kyokumencodeTest.o shogiruleTest.o shogigameTest.o
+TESTOBJS = mainTest.o kyokumencodeTest.o shogiruleTest.o shogigameTest.o shogidbTest.o
 OBJS = $(filter-out ../main.o,$(wildcard ../*.o))
 
 .SUFFIXES: .cpp .o

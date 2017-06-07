@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <sqlite3.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <new>
 #include "shogiban.h"
 #include "kyokumencode.h"
@@ -266,11 +267,15 @@ void insertShogiDB(const char* filename, Kifu* kifu)
 
 class ShogiDB::ShogiDBImpl
 {
-public:
     sqlite3 *db;
+	void createTables();
+public:
 	ShogiDBImpl(const char* filename)
 	{
+		struct stat st;
+		int not_exists = stat(filename, &st);
 		int ret = sqlite3_open(filename, &db);
+		if (not_exists) ; // create table;
 		assert(ret == SQLITE_OK);
 	}
 
