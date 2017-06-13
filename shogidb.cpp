@@ -7,6 +7,7 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <sqlite3.h>
 #include <sys/time.h>
@@ -268,15 +269,102 @@ void insertShogiDB(const char* filename, Kifu* kifu)
 class ShogiDB::ShogiDBImpl
 {
     sqlite3 *db;
-	void createTables();
+	void createTables()
+	{
+		int ret = sqlite3_exec(db,
+				"create table KYOKUMEN_ID_MST ("
+				"KY_CODE TEXT PRIMARY KEY, "
+				"KY_ID INTEGER);"
+				, NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+		ret = sqlite3_exec(db,
+				"create table KIF_INF ("
+				"KIF_ID INTEGER PRIMARY KEY, "
+				"KIF_DATE TEXT, "
+				"UWATE_NM TEXT, "
+				"SHITATE_NM TEXT"
+				");"
+				, NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+	}
+	
+	int getNewKifID(){
+		int kif_id = 0;
+        sqlite3_stmt *selSql = NULL;
+        
+        int ret = sqlite3_prepare(db, "select ifnull(max(KIF_ID),0) from KIF_INF;", -1, &selSql, NULL);
+        assert(ret == SQLITE_OK);
+        sqlite3_reset(selSql);
+        ret = sqlite3_step(selSql);
+        assert(ret == SQLITE_ROW);
+        kif_id = sqlite3_column_int(selSql, 0) + 1;
+        
+        sqlite3_finalize(selSql);
+		return kif_id;
+	}
+
+	int insertKifInf(int kif_id, char* date, char* uwate_name, char* shitate_name, char* comment) {
+        sqlite3_stmt *insInfSql = NULL;
+        int ret = sqlite3_prepare(db, "insert into KIF_INF (KIF_ID, KIF_DATE, UWATE_NM, SHITATE_NM) values(?,?,?,?)", -1, &insInfSql, NULL);
+        assert(ret == SQLITE_OK);
+        sqlite3_reset(insInfSql);
+        sqlite3_bind_int(insInfSql, 1, kif_id);
+        sqlite3_bind_text(insInfSql, 2, date, strlen(date), SQLITE_TRANSIENT);
+        sqlite3_bind_text(insInfSql, 3, uwate_name, strlen(uwate_name), SQLITE_TRANSIENT);
+        sqlite3_bind_text(insInfSql, 4, shitate_name, strlen(shitate_name), SQLITE_TRANSIENT);
+        
+        ret = sqlite3_step(insInfSql);
+        assert(ret == SQLITE_DONE);
+        
+        sqlite3_finalize(insInfSql);
+		return 0;
+	}
+
+	int searchKifInf(char* date, char* uwate_name, char* shitate_name) {
+		int kif_id = 0;
+        sqlite3_stmt *selSql = NULL;
+        
+        int ret = sqlite3_prepare(db,
+				"select KIF_ID from KIF_INF"
+				" where KIF_DATE=?"
+				" and UWATE_NM=?"
+				" and SHITATE_NM=?;"
+				, -1, &selSql, NULL);
+        assert(ret == SQLITE_OK);
+        sqlite3_reset(selSql);
+        sqlite3_bind_text(selSql, 1, date, strlen(date), SQLITE_TRANSIENT);
+        sqlite3_bind_text(selSql, 2, uwate_name, strlen(uwate_name), SQLITE_TRANSIENT);
+        sqlite3_bind_text(selSql, 3, shitate_name, strlen(shitate_name), SQLITE_TRANSIENT);
+        ret = sqlite3_step(selSql);
+        if (ret == SQLITE_ROW)
+			kif_id = sqlite3_column_int(selSql, 0);
+        else if (ret == SQLITE_DONE) kif_id = 0;
+		else kif_id = -1;
+
+        sqlite3_finalize(selSql);
+		return kif_id;
+	}
+
 public:
 	ShogiDBImpl(const char* filename)
 	{
 		struct stat st;
 		int not_exists = stat(filename, &st);
 		int ret = sqlite3_open(filename, &db);
-		if (not_exists) ; // create table;
 		assert(ret == SQLITE_OK);
+		sqlite3_busy_timeout(db, 100);
+		if (not_exists) createTables();
+	}
+
+	int registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment)
+	{
+		int kif_id = searchKifInf(date, uwate_name, shitate_name);
+		if (kif_id!=0) return -1;
+
+
+		kif_id = getNewKifID();
+		insertKifInf(kif_id, date, uwate_name, shitate_name, comment);
+		return kif_id;
 	}
 
 	~ShogiDBImpl()
@@ -294,6 +382,11 @@ ShogiDB::ShogiDB(const char *filename)
 	} catch (std::exception &e) {
 		throw;
 	}
+}
+
+int ShogiDB::registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment)
+{
+	return sdb->registerKifu(date, uwate_name, shitate_name, comment);
 }
 
 ShogiDB::~ShogiDB()

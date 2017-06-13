@@ -16,5 +16,8 @@ class ShogiDB
 
 public:
 	ShogiDB(const char* filename);
+	/// @return Kifu ID
+	/// @retval -1 exists same info.
+	int registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment);
 	~ShogiDB();
 };
