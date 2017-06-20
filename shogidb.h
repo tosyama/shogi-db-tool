@@ -18,6 +18,9 @@ public:
 	ShogiDB(const char* filename);
 	/// @return Kifu ID
 	/// @retval -1 exists same info.
-	int registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment);
+	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment);
+	/// @retval 0 Success.
+	/// @retval -1 Exists same info.
+	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result);
 	~ShogiDB();
 };

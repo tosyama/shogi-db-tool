@@ -16,7 +16,7 @@
 #include "shogiban.h"
 #include "kyokumencode.h"
 #include "sashite.h"
-#include"kifu.h"
+#include "kifu.h"
 #include "shogidb.h"
 
 void createShogiDB(const char* filename)
@@ -286,6 +286,25 @@ class ShogiDB::ShogiDBImpl
 				");"
 				, NULL, NULL, NULL);
 		assert(ret == SQLITE_OK);
+		ret = sqlite3_exec(db,
+				"create table KYOKUMEN_KIF_INF ("
+				"KY_ID INTEGER, "
+				"KIF_ID INTEGER, "
+				"TESUU INTEGER"
+				");"
+				, NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+
+		ret = sqlite3_exec(db,
+				"create table KYOKUMEN_INF ("
+				"KY_ID INTEGER PRIMARY KEY, "
+				"WIN_NUM INTEGER, "
+				"LOSE_NUM INTEGER, "
+				"DRAW_NUM INTEGER, "
+				"SCORE INTEGER"
+				");"
+				, NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
 	}
 	
 	int getNewKifID(){
@@ -294,7 +313,6 @@ class ShogiDB::ShogiDBImpl
         
         int ret = sqlite3_prepare(db, "select ifnull(max(KIF_ID),0) from KIF_INF;", -1, &selSql, NULL);
         assert(ret == SQLITE_OK);
-        sqlite3_reset(selSql);
         ret = sqlite3_step(selSql);
         assert(ret == SQLITE_ROW);
         kif_id = sqlite3_column_int(selSql, 0) + 1;
@@ -303,11 +321,10 @@ class ShogiDB::ShogiDBImpl
 		return kif_id;
 	}
 
-	int insertKifInf(int kif_id, char* date, char* uwate_name, char* shitate_name, char* comment) {
+	int insertKifInf(int kif_id, const char* date, const char* uwate_name, const char* shitate_name, const char* comment) {
         sqlite3_stmt *insInfSql = NULL;
         int ret = sqlite3_prepare(db, "insert into KIF_INF (KIF_ID, KIF_DATE, UWATE_NM, SHITATE_NM) values(?,?,?,?)", -1, &insInfSql, NULL);
         assert(ret == SQLITE_OK);
-        sqlite3_reset(insInfSql);
         sqlite3_bind_int(insInfSql, 1, kif_id);
         sqlite3_bind_text(insInfSql, 2, date, strlen(date), SQLITE_TRANSIENT);
         sqlite3_bind_text(insInfSql, 3, uwate_name, strlen(uwate_name), SQLITE_TRANSIENT);
@@ -320,7 +337,7 @@ class ShogiDB::ShogiDBImpl
 		return 0;
 	}
 
-	int searchKifInf(char* date, char* uwate_name, char* shitate_name) {
+	int searchKifInf(const char* date, const char* uwate_name, const char* shitate_name) {
 		int kif_id = 0;
         sqlite3_stmt *selSql = NULL;
         
@@ -331,7 +348,6 @@ class ShogiDB::ShogiDBImpl
 				" and SHITATE_NM=?;"
 				, -1, &selSql, NULL);
         assert(ret == SQLITE_OK);
-        sqlite3_reset(selSql);
         sqlite3_bind_text(selSql, 1, date, strlen(date), SQLITE_TRANSIENT);
         sqlite3_bind_text(selSql, 2, uwate_name, strlen(uwate_name), SQLITE_TRANSIENT);
         sqlite3_bind_text(selSql, 3, shitate_name, strlen(shitate_name), SQLITE_TRANSIENT);
@@ -345,8 +361,96 @@ class ShogiDB::ShogiDBImpl
 		return kif_id;
 	}
 
+	int getMaxKyID()
+	{
+        sqlite3_stmt *selSql = NULL;
+
+        int ret = sqlite3_prepare(db, "select ifnull(max(KY_ID),0) from KYOKUMEN_ID_MST;", -1, &selSql, NULL);
+        assert(ret == SQLITE_OK);
+    
+        ret = sqlite3_step(selSql);
+        assert(ret == SQLITE_ROW);
+        
+        int max_ky_id = sqlite3_column_int(selSql, 0);
+        sqlite3_finalize(selSql);
+		return max_ky_id;
+	}
+
+	int maxKyID;
+	int insertKyokumenMst(const char* ky_code)
+	{
+		if (!maxKyID) maxKyID = getMaxKyID();
+		
+		maxKyID++;
+
+		sqlite3_stmt *insMstSql = NULL;
+		int ret = sqlite3_prepare(db, "insert into KYOKUMEN_ID_MST (KY_CODE, KY_ID) values(?,?);", -1, &insMstSql, NULL);
+		assert(ret == SQLITE_OK);
+
+		sqlite3_bind_text(insMstSql, 1, ky_code, strlen(ky_code), SQLITE_TRANSIENT);
+		sqlite3_bind_int(insMstSql, 2, maxKyID);
+		ret = sqlite3_step(insMstSql);
+	
+		assert(ret == SQLITE_DONE);
+		sqlite3_finalize(insMstSql);
+	
+		ret = sqlite3_prepare(db, "insert into KYOKUMEN_INF "
+				"(KY_ID,WIN_NUM,LOSE_NUM,DRAW_NUM,SCORE)"
+				"values(?,0,0,0,0);", -1, &insMstSql, NULL);
+		assert(ret == SQLITE_OK);
+		
+		sqlite3_bind_int(insMstSql, 1, maxKyID);
+		ret = sqlite3_step(insMstSql);
+		
+		assert(ret == SQLITE_DONE);
+		sqlite3_finalize(insMstSql);
+
+		return  maxKyID;
+	}
+
+	void updateKyokumenInf(int ky_id, int result)
+	{
+	}
+
+	void insertKyokumenKifInf(int ky_id, int kif_id, int index)
+	{
+		sqlite3_stmt *insMstSql = NULL;
+		int ret = sqlite3_prepare(db, "insert into KYOKUMEN_KIF_INF (KY_ID,KIF_ID,TESUU) values(?,?,?);", -1, &insMstSql, NULL);
+		assert(ret == SQLITE_OK);
+		sqlite3_reset(insMstSql);
+		sqlite3_bind_int(insMstSql, 1, ky_id);
+		sqlite3_bind_int(insMstSql, 2, kif_id);
+		sqlite3_bind_int(insMstSql, 3, index);
+
+		ret = sqlite3_step(insMstSql);
+		assert(ret == SQLITE_DONE);
+
+        sqlite3_finalize(insMstSql);
+	}
+
+	int getKyokumenID(const char* kyokumencode)
+	{
+		sqlite3_stmt *selSql = NULL;
+
+		int ret = sqlite3_prepare(db, "select KY_ID from KYOKUMEN_ID_MST where KY_CODE=?;", -1, &selSql, NULL);
+		assert(ret == SQLITE_OK);
+		sqlite3_reset(selSql);
+		sqlite3_bind_text(selSql, 1, kyokumencode, strlen(kyokumencode), SQLITE_TRANSIENT);
+		ret = sqlite3_step(selSql);
+
+		int ky_id;
+		if (ret == SQLITE_ROW)
+			ky_id = sqlite3_column_int(selSql, 0);
+		else if (ret == SQLITE_DONE) {
+			ky_id = insertKyokumenMst(kyokumencode);
+		} else ky_id = -1;	
+
+		sqlite3_finalize(selSql);
+		return ky_id;
+	}
+
 public:
-	ShogiDBImpl(const char* filename)
+	ShogiDBImpl(const char* filename):maxKyID(0)
 	{
 		struct stat st;
 		int not_exists = stat(filename, &st);
@@ -356,15 +460,22 @@ public:
 		if (not_exists) createTables();
 	}
 
-	int registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment)
+	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment)
 	{
 		int kif_id = searchKifInf(date, uwate_name, shitate_name);
 		if (kif_id!=0) return -1;
 
-
 		kif_id = getNewKifID();
 		insertKifInf(kif_id, date, uwate_name, shitate_name, comment);
 		return kif_id;
+	}
+
+	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
+	{
+		int ky_id = getKyokumenID(kyokumencode);
+		if (kif_id <= 0) return -1;
+		insertKyokumenKifInf(ky_id, kif_id, index);
+		updateKyokumenInf(ky_id, result);
 	}
 
 	~ShogiDBImpl()
@@ -384,9 +495,14 @@ ShogiDB::ShogiDB(const char *filename)
 	}
 }
 
-int ShogiDB::registerKifu(char* date, char* uwate_name, char* shitate_name, char* comment)
+int ShogiDB::registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment)
 {
 	return sdb->registerKifu(date, uwate_name, shitate_name, comment);
+}
+
+int ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
+{
+	return sdb->registerKyokumen(kyokumencode, kif_id, index, result);
 }
 
 ShogiDB::~ShogiDB()
