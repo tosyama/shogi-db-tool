@@ -266,6 +266,41 @@ void insertShogiDB(const char* filename, Kifu* kifu)
     sqlite3_close(db);
 }
 
+static int splitInt(int* intarr, int maxsize, const unsigned char* srcstr, int separator)
+{
+	int i = 0;
+	int c;
+	intarr[0]=0;
+	while (c=*srcstr) {
+		if (c==separator) {
+			if ((i+1)>=maxsize) return i;
+			i++;
+			intarr[i] = 0;
+		} else { 
+			intarr[i] = intarr[i]*10 + (c-'0');
+		}
+		++srcstr;
+	}
+	return i;
+}
+
+static int joinInt(char* outstr, int maxsize, int* inarr, int insize, int separator)
+{
+	int n=0;
+	for (int i=0; i<insize; i++) {
+		if (inarr[i]) {
+			n+=snprintf(&outstr[n], maxsize-n, "%d", inarr[i]);
+		}
+		if ((i<insize-1) && (n<maxsize)) {
+			outstr[n]=separator;
+			n++;
+		}
+		if (n==maxsize) return n;
+	}
+	outstr[n] = 0;
+	return n;
+}
+
 class ShogiDB::ShogiDBImpl
 {
     sqlite3 *db;
@@ -298,10 +333,8 @@ class ShogiDB::ShogiDBImpl
 		ret = sqlite3_exec(db,
 				"create table KYOKUMEN_INF ("
 				"KY_ID INTEGER PRIMARY KEY, "
-				"WIN_NUM INTEGER, "
-				"LOSE_NUM INTEGER, "
-				"DRAW_NUM INTEGER, "
-				"SCORE INTEGER"
+				"SCORE INTEGER, "
+				"RESULTS STRING"
 				");"
 				, NULL, NULL, NULL);
 		assert(ret == SQLITE_OK);
@@ -395,8 +428,8 @@ class ShogiDB::ShogiDBImpl
 		sqlite3_finalize(insMstSql);
 	
 		ret = sqlite3_prepare(db, "insert into KYOKUMEN_INF "
-				"(KY_ID,WIN_NUM,LOSE_NUM,DRAW_NUM,SCORE)"
-				"values(?,0,0,0,0);", -1, &insMstSql, NULL);
+				"(KY_ID,SCORE,RESULTS) "
+				"values(?,0,'');", -1, &insMstSql, NULL);
 		assert(ret == SQLITE_OK);
 		
 		sqlite3_bind_int(insMstSql, 1, maxKyID);
@@ -408,8 +441,48 @@ class ShogiDB::ShogiDBImpl
 		return  maxKyID;
 	}
 
+	static const int MAX_RESULT_CODE=10;
+	static const int RESULT_SEP=',';
+
 	void updateKyokumenInf(int ky_id, int result)
 	{
+		assert(result >= 0 && result < MAX_RESULT_CODE);
+        sqlite3_stmt *selSql = NULL;
+        
+        int ret = sqlite3_prepare(db,
+				"select RESULTS from KYOKUMEN_INF"
+				" where KY_ID=?;" , -1, &selSql, NULL);
+        assert(ret == SQLITE_OK);
+		sqlite3_bind_int(selSql, 1, ky_id);
+        ret = sqlite3_step(selSql);
+		assert(ret==SQLITE_ROW);
+		
+		const unsigned char* results_str;
+        if (ret == SQLITE_ROW)
+			results_str = sqlite3_column_text(selSql, 0);
+		sqlite3_finalize(selSql);
+			
+		int results[MAX_RESULT_CODE];
+		int maxind;
+		maxind = splitInt(results, MAX_RESULT_CODE, results_str, RESULT_SEP);
+		while (maxind<result) {
+			++maxind;
+			results[maxind] = 0;
+		}
+		results[result]++;
+		
+		char data_str[128];
+		int len = joinInt(data_str, 128, results, maxind+1, RESULT_SEP);
+        ret = sqlite3_prepare(db,
+				"update KYOKUMEN_INF set RESULTS=?"
+				" where KY_ID=?;" , -1, &selSql, NULL);
+        assert(ret == SQLITE_OK);
+		sqlite3_bind_text(selSql, 1, data_str, len, SQLITE_TRANSIENT);
+		sqlite3_bind_int(selSql, 2, ky_id);
+        ret = sqlite3_step(selSql);
+        assert(ret == SQLITE_DONE);
+
+		sqlite3_finalize(selSql);
 	}
 
 	void insertKyokumenKifInf(int ky_id, int kif_id, int index)
