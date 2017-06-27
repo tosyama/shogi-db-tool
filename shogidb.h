@@ -22,5 +22,8 @@ public:
 	/// @retval 0 Success.
 	/// @retval -1 Exists same info.
 	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result);
+	/// @return total number of results.
+	int getKyokumenResults(const char* kyokumencode, int *results, int *score);
+
 	~ShogiDB();
 };

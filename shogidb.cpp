@@ -444,27 +444,36 @@ class ShogiDB::ShogiDBImpl
 	static const int MAX_RESULT_CODE=10;
 	static const int RESULT_SEP=',';
 
-	void updateKyokumenInf(int ky_id, int result)
+	int getKyokumenInf(int ky_id, int* results, int maxsize, int* score)
 	{
-		assert(result >= 0 && result < MAX_RESULT_CODE);
         sqlite3_stmt *selSql = NULL;
         
         int ret = sqlite3_prepare(db,
-				"select RESULTS from KYOKUMEN_INF"
+				"select SCORE, RESULTS from KYOKUMEN_INF"
 				" where KY_ID=?;" , -1, &selSql, NULL);
         assert(ret == SQLITE_OK);
 		sqlite3_bind_int(selSql, 1, ky_id);
         ret = sqlite3_step(selSql);
 		assert(ret==SQLITE_ROW);
-		
+
 		const unsigned char* results_str;
-        if (ret == SQLITE_ROW)
-			results_str = sqlite3_column_text(selSql, 0);
+        if (ret == SQLITE_ROW) {
+        	*score = sqlite3_column_int(selSql, 0);
+			results_str = sqlite3_column_text(selSql, 1);
+		}
+		int maxind = splitInt(results, maxsize, results_str, RESULT_SEP);
 		sqlite3_finalize(selSql);
+
+		return maxind;
+	}
+
+	void updateKyokumenInf(int ky_id, int result)
+	{
+		assert(result >= 0 && result < MAX_RESULT_CODE);
 			
 		int results[MAX_RESULT_CODE];
-		int maxind;
-		maxind = splitInt(results, MAX_RESULT_CODE, results_str, RESULT_SEP);
+		int score, maxind;
+		maxind = getKyokumenInf(ky_id, results, MAX_RESULT_CODE, &score);
 		while (maxind<result) {
 			++maxind;
 			results[maxind] = 0;
@@ -473,16 +482,17 @@ class ShogiDB::ShogiDBImpl
 		
 		char data_str[128];
 		int len = joinInt(data_str, 128, results, maxind+1, RESULT_SEP);
-        ret = sqlite3_prepare(db,
+        sqlite3_stmt *updSql = NULL;
+        int ret = sqlite3_prepare(db,
 				"update KYOKUMEN_INF set RESULTS=?"
-				" where KY_ID=?;" , -1, &selSql, NULL);
+				" where KY_ID=?;" , -1, &updSql, NULL);
         assert(ret == SQLITE_OK);
-		sqlite3_bind_text(selSql, 1, data_str, len, SQLITE_TRANSIENT);
-		sqlite3_bind_int(selSql, 2, ky_id);
-        ret = sqlite3_step(selSql);
+		sqlite3_bind_text(updSql, 1, data_str, len, SQLITE_TRANSIENT);
+		sqlite3_bind_int(updSql, 2, ky_id);
+        ret = sqlite3_step(updSql);
         assert(ret == SQLITE_DONE);
 
-		sqlite3_finalize(selSql);
+		sqlite3_finalize(updSql);
 	}
 
 	void insertKyokumenKifInf(int ky_id, int kif_id, int index)
@@ -501,7 +511,7 @@ class ShogiDB::ShogiDBImpl
         sqlite3_finalize(insMstSql);
 	}
 
-	int getKyokumenID(const char* kyokumencode)
+	int getKyokumenID(const char* kyokumencode, bool do_create=false)
 	{
 		sqlite3_stmt *selSql = NULL;
 
@@ -514,7 +524,7 @@ class ShogiDB::ShogiDBImpl
 		int ky_id;
 		if (ret == SQLITE_ROW)
 			ky_id = sqlite3_column_int(selSql, 0);
-		else if (ret == SQLITE_DONE) {
+		else if (ret == SQLITE_DONE && do_create) {
 			ky_id = insertKyokumenMst(kyokumencode);
 		} else ky_id = -1;	
 
@@ -545,10 +555,29 @@ public:
 
 	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
 	{
-		int ky_id = getKyokumenID(kyokumencode);
+		int ky_id = getKyokumenID(kyokumencode, true);
 		if (kif_id <= 0) return -1;
 		insertKyokumenKifInf(ky_id, kif_id, index);
 		updateKyokumenInf(ky_id, result);
+	}
+
+	int getKyokumenResults(const char* kyokumencode, int *results, int *score)
+	{
+		int total, ind;
+		int ky_id = getKyokumenID(kyokumencode);
+		if (ky_id > 0) {
+			ind = getKyokumenInf(ky_id, results, MAX_RESULT_CODE, score);
+			total = results[0];
+			for (int i=1; i<=ind; i++)
+				total += results[i];
+			++ind;
+		} else {
+			total = ind = 0;
+			*score =0;
+		}
+		for (int i=ind; i<MAX_RESULT_CODE; i++)
+			results[i]=0;	
+		return total;
 	}
 
 	~ShogiDBImpl()
@@ -576,6 +605,11 @@ int ShogiDB::registerKifu(const char* date, const char* uwate_name, const char* 
 int ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
 {
 	return sdb->registerKyokumen(kyokumencode, kif_id, index, result);
+}
+
+int ShogiDB::getKyokumenResults(const char* kyokumencode, int *results, int *score)
+{
+	return sdb->getKyokumenResults(kyokumencode, results, score);
 }
 
 ShogiDB::~ShogiDB()
