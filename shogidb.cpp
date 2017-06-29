@@ -317,7 +317,10 @@ class ShogiDB::ShogiDBImpl
 				"KIF_ID INTEGER PRIMARY KEY, "
 				"KIF_DATE TEXT, "
 				"UWATE_NM TEXT, "
-				"SHITATE_NM TEXT"
+				"SHITATE_NM TEXT, "
+				"SENTE INTEGER, " // 0:shitate 1:uwate
+				"RESULT INTEGER, " // result of each branch
+				"COMMENT TEXT"
 				");"
 				, NULL, NULL, NULL);
 		assert(ret == SQLITE_OK);
@@ -354,14 +357,19 @@ class ShogiDB::ShogiDBImpl
 		return kif_id;
 	}
 
-	int insertKifInf(int kif_id, const char* date, const char* uwate_name, const char* shitate_name, const char* comment) {
+	int insertKifInf(int kif_id, const char* date, const char* uwate_name, const char* shitate_name,
+			int sente, int result, const char* comment) {
         sqlite3_stmt *insInfSql = NULL;
-        int ret = sqlite3_prepare(db, "insert into KIF_INF (KIF_ID, KIF_DATE, UWATE_NM, SHITATE_NM) values(?,?,?,?)", -1, &insInfSql, NULL);
+        int ret = sqlite3_prepare(db,
+			"insert into KIF_INF (KIF_ID, KIF_DATE, UWATE_NM, SHITATE_NM, SENTE, RESULT, COMMENT) values(?,?,?,?,?,?,?)", -1, &insInfSql, NULL);
         assert(ret == SQLITE_OK);
         sqlite3_bind_int(insInfSql, 1, kif_id);
         sqlite3_bind_text(insInfSql, 2, date, strlen(date), SQLITE_TRANSIENT);
         sqlite3_bind_text(insInfSql, 3, uwate_name, strlen(uwate_name), SQLITE_TRANSIENT);
         sqlite3_bind_text(insInfSql, 4, shitate_name, strlen(shitate_name), SQLITE_TRANSIENT);
+        sqlite3_bind_int(insInfSql, 5, sente);
+        sqlite3_bind_int(insInfSql, 6, result);
+        sqlite3_bind_text(insInfSql, 7, comment, strlen(comment), SQLITE_TRANSIENT);
         
         ret = sqlite3_step(insInfSql);
         assert(ret == SQLITE_DONE);
@@ -543,13 +551,13 @@ public:
 		if (not_exists) createTables();
 	}
 
-	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment)
+	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, int sente, int result, const char* comment)
 	{
 		int kif_id = searchKifInf(date, uwate_name, shitate_name);
 		if (kif_id!=0) return -1;
 
 		kif_id = getNewKifID();
-		insertKifInf(kif_id, date, uwate_name, shitate_name, comment);
+		insertKifInf(kif_id, date, uwate_name, shitate_name, sente, result, comment);
 		return kif_id;
 	}
 
@@ -597,9 +605,10 @@ ShogiDB::ShogiDB(const char *filename)
 	}
 }
 
-int ShogiDB::registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment)
+int ShogiDB::registerKifu(const char* date, const char* uwate_name, const char* shitate_name,
+		int sente, int result, const char* comment)
 {
-	return sdb->registerKifu(date, uwate_name, shitate_name, comment);
+	return sdb->registerKifu(date, uwate_name, shitate_name, sente, result, comment);
 }
 
 int ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)

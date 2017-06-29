@@ -14,11 +14,11 @@ TEST_CASE("shogi database tests", "[db]")
 	REQUIRE(stat(dbname, &st) == 0);
 
 	// kif info registration.
-	int kif_id = sdb.registerKifu("20121212", "Player1", "Player2", "test1");
+	int kif_id = sdb.registerKifu("20121212", "Player1", "Player2", 0, 0, "test1");
 	REQUIRE(kif_id == 1);
-	kif_id = sdb.registerKifu("20131213", "Player1", "Player2", "test2");
+	kif_id = sdb.registerKifu("20131213", "Player1", "Player2", 0, 1, "test2");
 	REQUIRE(kif_id == 2);
-	kif_id = sdb.registerKifu("20121212", "Player1", "Player2", "test3");
+	kif_id = sdb.registerKifu("20121212", "Player1", "Player2", 0, 1, "test3");
 	REQUIRE(kif_id == -1);
 
 	// kyokumen info registration.

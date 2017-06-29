@@ -16,9 +16,13 @@ class ShogiDB
 
 public:
 	ShogiDB(const char* filename);
+	/// @param[in] sente 0:shitate, 1:uwate.
+	/// @param[in] result Result of game from shitate.
 	/// @return Kifu ID
 	/// @retval -1 exists same info.
-	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, const char* comment);
+	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, 
+			int sente, int result, const char* comment);
+
 	/// @retval 0 Success.
 	/// @retval -1 Exists same info.
 	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result);
