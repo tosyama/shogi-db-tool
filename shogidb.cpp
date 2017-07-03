@@ -301,9 +301,25 @@ static int joinInt(char* outstr, int maxsize, int* inarr, int insize, int separa
 	return n;
 }
 
+static int defaultConvResult(int teban, int shitate_result)
+{
+	if (teban) {
+		if (shitate_result < 6) {
+			if (shitate_result & 1) {
+				return shitate_result-1;
+			} else {
+				return shitate_result+1;
+			}
+		}
+	}
+	return shitate_result;
+}
+
 class ShogiDB::ShogiDBImpl
 {
     sqlite3 *db;
+	ConvResult convResult;
+
 	void createTables()
 	{
 		int ret = sqlite3_exec(db,
@@ -357,6 +373,11 @@ class ShogiDB::ShogiDBImpl
 		return kif_id;
 	}
 
+	// Kif_Inf cache
+	int cache_kif_id;
+	int cache_kif_sente;
+	int cache_kif_result;
+
 	int insertKifInf(int kif_id, const char* date, const char* uwate_name, const char* shitate_name,
 			int sente, int result, const char* comment) {
         sqlite3_stmt *insInfSql = NULL;
@@ -375,6 +396,10 @@ class ShogiDB::ShogiDBImpl
         assert(ret == SQLITE_DONE);
         
         sqlite3_finalize(insInfSql);
+		
+		cache_kif_id = kif_id;
+		cache_kif_sente = sente;
+		cache_kif_result = result;
 		return 0;
 	}
 
@@ -400,6 +425,33 @@ class ShogiDB::ShogiDBImpl
 
         sqlite3_finalize(selSql);
 		return kif_id;
+	}
+
+	int getKifResult(int kif_id, int* sente, int* result) {
+		if (kif_id == cache_kif_id) {
+			*sente = cache_kif_sente;
+			*result = cache_kif_result;
+			return 0;
+		}
+
+        sqlite3_stmt *selSql = NULL;
+        
+        int ret = sqlite3_prepare(db,
+				"select SENTE, RESULT from KIF_INF"
+				" where KIF_ID=?;"
+				, -1, &selSql, NULL);
+
+        assert(ret == SQLITE_OK);
+        sqlite3_bind_int(selSql, 1, kif_id);
+        ret = sqlite3_step(selSql);
+
+		assert(ret == SQLITE_ROW);
+		cache_kif_id = kif_id;
+		cache_kif_sente = *sente = sqlite3_column_int(selSql, 0);
+		cache_kif_result = *result = sqlite3_column_int(selSql, 1);
+
+        sqlite3_finalize(selSql);
+		return 0;
 	}
 
 	int getMaxKyID()
@@ -541,18 +593,25 @@ class ShogiDB::ShogiDBImpl
 	}
 
 public:
-	ShogiDBImpl(const char* filename):maxKyID(0)
+	ShogiDBImpl(const char* filename, ConvResult conv_result):
+		maxKyID(0),
+		cache_kif_id(0),
+		convResult(conv_result)
 	{
 		struct stat st;
 		int not_exists = stat(filename, &st);
 		int ret = sqlite3_open(filename, &db);
+
 		assert(ret == SQLITE_OK);
 		sqlite3_busy_timeout(db, 100);
 		if (not_exists) createTables();
+
+		if(!convResult) convResult = defaultConvResult;
 	}
 
 	int registerKifu(const char* date, const char* uwate_name, const char* shitate_name, int sente, int result, const char* comment)
 	{
+		assert(result >= 0 && result < MAX_RESULT_CODE);
 		int kif_id = searchKifInf(date, uwate_name, shitate_name);
 		if (kif_id!=0) return -1;
 
@@ -561,11 +620,16 @@ public:
 		return kif_id;
 	}
 
-	int registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
+	void registerKyokumen(const char* kyokumencode, int kif_id, int index)
 	{
+		assert(kif_id > 0);
 		int ky_id = getKyokumenID(kyokumencode, true);
-		if (kif_id <= 0) return -1;
+		
 		insertKyokumenKifInf(ky_id, kif_id, index);
+		int sente, result;
+		getKifResult(kif_id, &sente, &result);
+		int teban = sente ? index&1 : (index ^ 1)&1;
+		result = convResult(teban, result);
 		updateKyokumenInf(ky_id, result);
 	}
 
@@ -594,10 +658,10 @@ public:
 	}
 };
 
-ShogiDB::ShogiDB(const char *filename)
+ShogiDB::ShogiDB(const char *filename, ConvResult conv_result)
 {
 	try {
-		sdb = new ShogiDBImpl(filename);
+		sdb = new ShogiDBImpl(filename, conv_result);
 	} catch (std::bad_alloc &e) {
 		throw;
 	} catch (std::exception &e) {
@@ -611,9 +675,9 @@ int ShogiDB::registerKifu(const char* date, const char* uwate_name, const char* 
 	return sdb->registerKifu(date, uwate_name, shitate_name, sente, result, comment);
 }
 
-int ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index, int result)
+void ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index)
 {
-	return sdb->registerKyokumen(kyokumencode, kif_id, index, result);
+	sdb->registerKyokumen(kyokumencode, kif_id, index);
 }
 
 int ShogiDB::getKyokumenResults(const char* kyokumencode, int *results, int *score)
