@@ -30,5 +30,9 @@ public:
 	/// @return Total number of results.
 	int getKyokumenResults(const char* kyokumencode, int *results, int *score);
 
+	void beginTransaction();
+	void commit();
+	void rollback();
+
 	~ShogiDB();
 };

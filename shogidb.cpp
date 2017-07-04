@@ -560,7 +560,6 @@ class ShogiDB::ShogiDBImpl
 		sqlite3_stmt *insMstSql = NULL;
 		int ret = sqlite3_prepare(db, "insert into KYOKUMEN_KIF_INF (KY_ID,KIF_ID,TESUU) values(?,?,?);", -1, &insMstSql, NULL);
 		assert(ret == SQLITE_OK);
-		sqlite3_reset(insMstSql);
 		sqlite3_bind_int(insMstSql, 1, ky_id);
 		sqlite3_bind_int(insMstSql, 2, kif_id);
 		sqlite3_bind_int(insMstSql, 3, index);
@@ -626,6 +625,7 @@ public:
 		int ky_id = getKyokumenID(kyokumencode, true);
 		
 		insertKyokumenKifInf(ky_id, kif_id, index);
+		// TODO: stop result count if exis same kyokumen.
 		int sente, result;
 		getKifResult(kif_id, &sente, &result);
 		int teban = sente ? index&1 : (index ^ 1)&1;
@@ -652,6 +652,27 @@ public:
 		return total;
 	}
 
+	void beginTransaction()
+	{
+		int ret = sqlite3_exec(db, "begin transaction;" , NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+	}
+
+	void commit()
+	{
+		int ret = sqlite3_exec(db, "commit;" , NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+	}
+
+	void rollback()
+	{
+		int ret = sqlite3_exec(db, "rollback;" , NULL, NULL, NULL);
+		assert(ret == SQLITE_OK);
+		// reset cache.
+		maxKyID = 0;
+		cache_kif_id = 0;
+	}
+	
 	~ShogiDBImpl()
 	{
 		sqlite3_close(db);
@@ -683,6 +704,21 @@ void ShogiDB::registerKyokumen(const char* kyokumencode, int kif_id, int index)
 int ShogiDB::getKyokumenResults(const char* kyokumencode, int *results, int *score)
 {
 	return sdb->getKyokumenResults(kyokumencode, results, score);
+}
+
+void ShogiDB::beginTransaction()
+{
+	sdb->beginTransaction();
+}
+
+void ShogiDB::commit()
+{
+	sdb->commit();
+}
+
+void ShogiDB::rollback()
+{
+	sdb->rollback();
 }
 
 ShogiDB::~ShogiDB()

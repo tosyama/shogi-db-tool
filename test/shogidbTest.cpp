@@ -49,4 +49,22 @@ TEST_CASE("shogi database tests", "[db]")
 	CHECK(results[0] == 1);
 	CHECK(results[1] == 2);
 	CHECK(results[2] == 1);
+
+	// transaction tests
+	sdb.beginTransaction();
+	kif_id = sdb.registerKifu("20121213", "Player1", "Player2", 0, 0, "test3");
+	sdb.registerKyokumen("code3", kif_id, 1);
+	REQUIRE(kif_id == 3);
+	sdb.rollback();
+	num = sdb.getKyokumenResults("code3", results, &score);
+	CHECK(num == 0);
+
+	sdb.beginTransaction();
+	kif_id = sdb.registerKifu("20121213", "Player1", "Player2", 0, 0, "test3");
+	sdb.registerKyokumen("code3", kif_id, 1);
+	REQUIRE(kif_id == 3);
+	sdb.commit();
+	num = sdb.getKyokumenResults("code3", results, &score);
+	CHECK(num == 1);
+
 }
