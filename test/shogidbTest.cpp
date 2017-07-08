@@ -45,9 +45,9 @@ TEST_CASE("shogi database tests", "[db]")
 	sdb.registerKyokumen("code", kif_id, 2);
 	sdb.registerKyokumen("code", kif_id, 3);
 	num = sdb.getKyokumenResults("code", results, &score);
-	CHECK(num == 4);
+	CHECK(num == 3);
 	CHECK(results[0] == 1);
-	CHECK(results[1] == 2);
+	CHECK(results[1] == 1);
 	CHECK(results[2] == 1);
 
 	// transaction tests
